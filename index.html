@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0e141d">
+<meta name="description" content="Clon offline de Blacktop: Police Chase. Juega sin wifi: ciudad 3D, atracos, persecución policial, garaje y modo 2 jugadores.">
+<title>BLACKTOP: POLICE CHASE · OFFLINE</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="game"></canvas>
+  <div id="flash"></div>
+  <div id="scanlines"></div>
+
+  <!-- ============================== HUD ============================== -->
+  <div id="hud" class="hidden">
+    <div class="hud-tl">
+      <div class="meter">
+        <span class="meter-label" data-i18n="hud.damage">DAÑO</span>
+        <div class="bar"><i id="bar-damage"></i></div>
+      </div>
+      <div class="meter">
+        <span class="meter-label" data-i18n="hud.police">POLICÍA</span>
+        <div class="bar police"><i id="bar-police"></i></div>
+      </div>
+      <div id="wanted" class="stars"></div>
+      <div id="heat-label" class="tiny"></div>
+    </div>
+
+    <div class="hud-tc">
+      <div id="banner" class="banner">
+        <div class="green-arrow">➤</div>
+        <div class="banner-text"><b id="banner-title"></b><small id="banner-sub"></small></div>
+      </div>
+      <div id="robbery" class="robbery hidden"><i id="bar-robbery"></i></div>
+      <div id="challenge" class="challenge"></div>
+      <div id="distance" class="distance"></div>
+    </div>
+
+    <div class="hud-tr">
+      <div class="money"><span class="coin">$</span><span id="money">0</span></div>
+      <div class="score"><span data-i18n="hud.score">PUNTOS</span> <b id="score">0</b> <span class="coin">●</span></div>
+      <div class="hud-buttons">
+        <button id="btn-pause" class="icon-btn" title="Pausa">Ⅱ</button>
+        <button id="btn-fullscreen" class="icon-btn" title="Pantalla completa">⛶</button>
+        <button id="btn-map" class="icon-btn" title="Mapa">▣</button>
+      </div>
+    </div>
+
+    <div id="minimap-wrap">
+      <canvas id="minimap" width="260" height="260"></canvas>
+      <div id="minimap-title" class="tiny">MAPA</div>
+    </div>
+
+    <div class="hud-bl">
+      <div id="p2-stats" class="p2-stats hidden"></div>
+    </div>
+
+    <div class="hud-bc">
+      <div id="timer" class="timer hidden"></div>
+      <div id="multi" class="multi"></div>
+      <div class="speedo">
+        <div class="speed-ring"><div class="speed-inner"><b id="speed">0</b><small data-i18n="hud.speed">KM/H</small></div></div>
+      </div>
+      <div class="meter nitro-meter">
+        <span class="meter-label" data-i18n="hud.nitro">NITRO</span>
+        <div class="bar"><i id="bar-nitro"></i></div>
+      </div>
+    </div>
+
+    <div id="split-labels" class="split-labels hidden"><span>J1</span><span>J2</span></div>
+    <div id="toast"></div>
+    <div id="center-msg"></div>
+    <div id="fps"></div>
+
+    <!-- Controles táctiles -->
+    <div id="touch">
+      <div class="touch-left">
+        <button data-touch="left" class="tbtn">◀</button>
+        <button data-touch="right" class="tbtn">▶</button>
+      </div>
+      <div class="touch-right">
+        <button data-touch="look" class="tbtn small">👁</button>
+        <button data-touch="nitro" class="tbtn small nitro">N</button>
+        <button data-touch="brake" class="tbtn small">B</button>
+        <button data-touch="throttle" class="tbtn big">▲</button>
+        <button data-touch="reverse" class="tbtn small">▼</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ PANTALLAS ========================= -->
+  <div id="screen" class="screen"></div>
+
+  <!-- ============================ CARGA ============================= -->
+  <div id="loading">
+    <div class="load-logo"><span>BLACKTOP</span><small>POLICE CHASE</small></div>
+    <div class="load-bar"><i></i></div>
+    <div class="load-text">CARGANDO CIUDAD 3D…</div>
+  </div>
+  <div id="fatal" class="hidden"></div>
+</div>
+
+<!-- Todo local. Ninguna petición a internet. -->
+<script src="vendor/three.min.js"></script>
+<script src="src/core.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/models.js"></script>
+<script src="src/city.js"></script>
+<script src="src/physics.js"></script>
+<script src="src/garage.js"></script>
+<script src="src/ai.js"></script>
+<script src="src/missions.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/game.js"></script>
+<script>
+  window.addEventListener('load', function () {
+    try { BTP.Game.boot(); }
+    catch (err) {
+      console.error(err);
+      var f = document.getElementById('fatal');
+      f.className = '';
+      f.innerHTML = '<h1>ERROR AL INICIAR</h1><p>' + (err && err.message ? err.message : err) + '</p>' +
+        '<p>Prueba a abrir el juego con <code>npm start</code> o en otro navegador con WebGL.</p>';
+      document.getElementById('loading').classList.add('hidden');
+    }
+  });
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+  }
+</script>
+</body>
+</html>

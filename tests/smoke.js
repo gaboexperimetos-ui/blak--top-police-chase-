@@ -1,0 +1,133 @@
+/* =========================================================================
+ * Test de humo SIN navegador y SIN dependencias: valida sintaxis, carga de
+ * módulos, lógica pura (garaje, guardado, retícula, idiomas) y que el juego
+ * no contiene ninguna URL externa (garantía de funcionamiento offline).
+ *   npm test
+ * ========================================================================= */
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+
+const ROOT = path.join(__dirname, '..');
+const FILES = ['core', 'audio', 'models', 'city', 'physics', 'garage', 'ai', 'missions', 'ui', 'game']
+  .map(n => path.join('src', n + '.js'));
+
+let pass = 0, fail = 0;
+function ok(name, cond, extra) {
+  if (cond) { pass++; console.log('  ✓ ' + name); }
+  else { fail++; console.log('  ✗ ' + name + (extra ? '  → ' + extra : '')); }
+}
+function section(s) { console.log('\n' + s); }
+
+/* ------------------------- Entorno mínimo ------------------------------- */
+const storage = new Map();
+const localStorage = {
+  getItem: k => (storage.has(k) ? storage.get(k) : null),
+  setItem: (k, v) => storage.set(k, String(v)),
+  removeItem: k => storage.delete(k),
+  clear: () => storage.clear()
+};
+const sandbox = {
+  window: {}, document: {
+    createElement: () => ({ width: 0, height: 0, getContext: () => ({}) }),
+    getElementById: () => null, querySelectorAll: () => [], addEventListener: () => {},
+    documentElement: { lang: 'es' }
+  },
+  localStorage, navigator: {}, console,
+  performance: { now: () => 0 },
+  setTimeout: () => 0, clearTimeout: () => {}, setInterval: () => 0, clearInterval: () => {},
+  requestAnimationFrame: () => 0,
+  addEventListener: () => {},
+  THREE: {}, Set, Map, Math, JSON, Date, parseInt, parseFloat, isFinite, String, Number, Object, Array
+};
+sandbox.window.localStorage = localStorage;
+sandbox.window.addEventListener = () => {};
+vm.createContext(sandbox);
+
+section('1. Sintaxis y carga de módulos');
+FILES.forEach(rel => {
+  const full = path.join(ROOT, rel);
+  const src = fs.readFileSync(full, 'utf8');
+  try {
+    new vm.Script(src, { filename: rel });
+    vm.runInContext(src, sandbox, { filename: rel });
+    ok('carga ' + rel, true);
+  } catch (e) { ok('carga ' + rel, false, e.message); }
+});
+const BTP = sandbox.window.BTP;
+ok('namespace BTP creado', !!BTP);
+if (BTP) {
+  ['C', 'U', 'I18n', 'Save', 'Bus', 'Audio', 'Models', 'FX', 'City', 'Physics',
+   'Garage', 'Traffic', 'Police', 'Missions', 'UI', 'Game'].forEach(k => ok('módulo BTP.' + k, !!BTP[k]));
+}
+
+section('2. Lógica pura');
+if (BTP) {
+  const U = BTP.U, C = BTP.C;
+  ok('clamp', U.clamp(12, 0, 10) === 10 && U.clamp(-3, 0, 10) === 0);
+  ok('formato de dinero', U.money(1234567) === '$1.234.567', U.money(1234567));
+  ok('formato de tiempo', U.time(75) === '01:15', U.time(75));
+  ok('headingTo este = -PI/2', Math.abs(BTP.Physics.headingTo(1, 0) + Math.PI / 2) < 1e-6);
+  ok('headingTo norte = 0', Math.abs(BTP.Physics.headingTo(0, -1)) < 1e-6);
+  ok('circleAABB sin colisión', U.circleAABB(0, 0, 2, 10, 0, 3, 3) === null);
+  const hit = U.circleAABB(2.5, 0, 2, 5, 0, 3, 3);
+  ok('circleAABB con colisión y normal', !!hit && hit.nx === -1 && hit.depth > 0, JSON.stringify(hit));
+  ok('retícula: camino adyacente', (function () {
+    const s = BTP.City.pathStep(0, 0, 3, 2);
+    return !!s && Math.abs(s.i) + Math.abs(s.j) === 1;
+  })(), JSON.stringify(BTP.City.pathStep(0, 0, 3, 2)));
+  ok('isRoad en intersección', BTP.City.isRoad(0, 0) === true);
+  ok('isRoad fuera de la ciudad', BTP.City.isRoad(2000, 2000) === false);
+  ok('6 niveles de persecución', C.MAX_WANTED === 6);
+}
+
+section('3. Garaje, mejoras y guardado');
+if (BTP) {
+  const G = BTP.Garage, S = BTP.Save;
+  ok('12 coches', G.CARS.length === 12, String(G.CARS.length));
+  ok('12 pinturas', G.COLORS.length === 12, String(G.COLORS.length));
+  ok('4 líneas de mejoras', G.UPGRADE_KEYS.length === 4);
+  ok('stats base', Math.abs(G.stats('muscle').speed - 32) < 0.01);
+  const lv = S.upgradesFor('muscle');
+  lv.speed = 5;
+  ok('mejora de velocidad aumenta stats', G.stats('muscle').speed > 32);
+  ok('coste máximo = Infinity', G.upgradeCost('muscle', 'speed') === Infinity);
+  lv.speed = 0;
+  ok('coste finito tras reiniciar nivel', Number.isFinite(G.upgradeCost('muscle', 'speed')));
+  ok('idioma ES', BTP.I18n.t('menu.play') === 'JUGAR');
+  BTP.I18n.set('en');
+  ok('idioma EN', BTP.I18n.t('menu.play') === 'PLAY');
+  BTP.I18n.set('es');
+  ok('comprar coche sin dinero falla', G.buyCar('hyper').ok === false);
+  S.addCash(100000);
+  ok('comprar coche con dinero', G.buyCar('hyper').ok === true && G.selected().id === 'hyper');
+  ok('guardado persiste', (function () {
+    const before = S.data.cash;
+    S.flush(); S.load();
+    return S.data.cash === before && G.isUnlocked('hyper') && G.selected().id === 'hyper';
+  })());
+  ok('desbloquear 2 jugadores', G.unlockSplit().ok === true && G.isSplit());
+  S.reset();
+  ok('borrar progreso', S.data.cash === 0 && !G.isSplit() && G.selected().id === 'muscle');
+  ok('modo Original activado por defecto', S.data.settings.classic === true);
+  ok('UI.setClassic disponible', typeof BTP.UI.setClassic === 'function');
+}
+
+section('4. Garantía OFFLINE (cero peticiones externas)');
+const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+const refs = [...html.matchAll(/(?:src|href)\s*=\s*"([^"]+)"/g)].map(m => m[1]);
+ok('sin URLs http/https en index.html', !refs.some(r => /^https?:/i.test(r)), refs.filter(r => /^https?:/i.test(r)).join(', '));
+ok('sin CDN / unpkg / googleapis', !/cdn|unpkg|jsdelivr|googleapis|fonts\.google/i.test(html));
+FILES.concat(['vendor/three.min.js', 'styles.css', 'sw.js']).forEach(rel => {
+  ok('existe ' + rel, fs.existsSync(path.join(ROOT, rel)));
+});
+ok('three.min.js empaquetado (>100 KB)', fs.statSync(path.join(ROOT, 'vendor/three.min.js')).size > 100000);
+const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+ok('Service Worker cachea todos los módulos', FILES.every(rel => sw.includes('./' + rel.replace(/\\/g, '/'))));
+ok('scripts clásicos (sin imports ESM)', FILES.every(rel => !/^\s*(import|export)\s/m.test(fs.readFileSync(path.join(ROOT, rel), 'utf8'))));
+
+console.log('\n────────────────────────────────────────────');
+console.log('  ' + pass + ' comprobaciones OK · ' + fail + ' fallos');
+console.log('────────────────────────────────────────────');
+process.exit(fail ? 1 : 0);
