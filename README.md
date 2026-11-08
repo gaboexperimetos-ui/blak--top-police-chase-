@@ -1,6 +1,6 @@
 # BLACKTOP: POLICE CHASE — clon jugable 100% OFFLINE
 
-Recreación completa y **original** del juego de Poki *Blacktop: Police Chase* (Steelpan Interactive), hecha para jugar **sin wifi**: ciudad 3D low-poly, atracos, persecución policial de 6 niveles, garaje con 12 coches y 12 pinturas, monedas, mejoras, minimapa, modos de juego, sonido procedural y pantalla dividida para 2 jugadores.
+Recreación completa y **original** del juego de Poki *Blacktop: Police Chase* (Steelpan Interactive), hecha para jugar **sin wifi**: ciudad 3D low-poly, atracos, persecución policial de 6 niveles, **11 siluetas de vehículo distintas**, garaje con 12 coches y 12 pinturas (todo disponible desde el inicio), monedas, mejoras, minimapa, modos de juego, sonido procedural y pantalla dividida para 2 jugadores.
 
 > Todo el código, los modelos 3D, las texturas, los sonidos y la música están **dentro de esta carpeta**. No hay CDN, ni `npm install`, ni peticiones de red: `npm test` verifica que `index.html` no contiene ni una sola URL externa.
 
@@ -52,7 +52,7 @@ Se puede desactivar en **Ajustes → MODO ORIGINAL (POKI)**: al desactivarlo vue
 | Bocina | `H` |
 | Menús | `Flechas/WASD` + `Enter`, `Esc` para volver |
 
-**2 jugadores (pantalla dividida):** se desbloquea en el garaje por `$2.500`.
+**2 jugadores (pantalla dividida):** disponible desde el primer arranque en el menú de modos, sin pagar ni desbloquear nada. J1 con `WASD`, J2 con flechas + `Ctrl`/`Shift` derecho.
 `J1` = `WASD` + `N` (nitro) + `Espacio` (freno) · `J2` = `Flechas` + `Ctrl derecho` (nitro) + `Shift derecho` (freno).
 
 ---
@@ -65,7 +65,7 @@ Se puede desactivar en **Ajustes → MODO ORIGINAL (POKI)**: al desactivarlo vue
 - **Daño acumulado:** cada choque resta salud; humo, chispas, destello rojo y destrucción del coche = fin de partida. Reparación de pago en el garaje.
 - **Ciudad abierta:** 13×13 calles, 310+ edificios con fachadas, callejones, parques con árboles y estanques, semáforos, farolas, muelles con contenedores y barcos, puente sobre el agua, monorraíl elevado con tren en movimiento, tráfico civil con IA y atajos por la retícula de calles.
 - **Física arcade:** aceleración, freno, marcha atrás, derrape con freno de mano, nitro, peso, agarre, colisiones con edificios, tráfico y policía, pinchos, escudo, humo, marcas de derrape y chispas.
-- **Garaje:** 12 coches con estadísticas de velocidad / agarre / peso / salud, 12 pinturas desbloqueables, 4 líneas de mejoras × 5 niveles, reparación y desbloqueo del modo 2 jugadores. Progreso guardado en `localStorage`.
+- **Garaje:** 12 coches con estadísticas de velocidad / agarre / peso / salud y **11 siluetas 3D propias** (muscle, sedán, compacto, deportivo, super, hyper, patrulla, furgoneta, pickup, blindado y autobús de tráfico), 12 pinturas, 4 líneas de mejoras × 5 niveles y reparación. Todo el catálogo y el modo 2 jugadores están accesibles desde el inicio; el progreso se guarda en `localStorage`.
 - **Modos:** Misiones, Huida infinita, Contrarreloj (10 puntos de control), Desafíos (adelantamientos, monedas, derrape) y 2 jugadores.
 - **Economía y puntuación:** monedas `$` por la ciudad, botín, multiplicadores por combo, adelantamientos peligrosos, derrapes y récords persistentes.
 - **HUD completo:** daño, policía, nivel de persecución, dinero, puntos, velocímetro, nitro, temporizador, distancia al objetivo, minimapa a pantalla completa, avisos y FPS opcional.
@@ -92,7 +92,7 @@ src/garage.js         12 coches, 12 pinturas, mejoras y desbloqueos
 src/missions.js       misiones, modos, monedas, combos y resultados
 src/ui.js             HUD, minimapa, menús, garaje y controles táctiles
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        70 comprobaciones sin navegador (npm test)
+tests/smoke.js        93 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -101,10 +101,10 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 72 comprobaciones: sintaxis, módulos, lógica, garaje, Modo Original y offline
+npm test    # 93 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
 ```
 
-También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje, los 4 modos, 2 jugadores, pantalla de resultados, apertura desde `file://` y caché del Service Worker — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
+También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 12 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v3 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
 
 ---
 
@@ -117,3 +117,19 @@ Si tú dispones de los assets originales **con derechos/licencia para usarlos**,
 Three.js se distribuye bajo licencia MIT (`vendor/THREE-LICENSE.txt`). El resto del código de este repo es propio; úsalo, modifícalo y compártelo libremente para jugar sin conexión.
 
 Para el análisis detallado y la tabla de correspondencia de funciones, ver [ANALISIS.md](ANALISIS.md).
+
+---
+
+## Revisión de arte y jugabilidad
+
+Esta pasada rehízo el apartado visual y corrigió los problemas señalados:
+
+- **Vehículos con silueta propia**: cada coche tiene perfil de carrocería, cabina, cristales, faros, guardabarros con arco, ruedas con buje y detalles exclusivos (toma de aire y franjas del muscle, alerón de los deportivos, baca y portones de la furgoneta, batea del pickup, caja del blindado, ventanales del autobús, letrero del taxi, barras y escudo de la patrulla). El tráfico mezcla **8 tipos distintos** en lugar de repetir un único modelo.
+- **Spawns corregidos**: tráfico, patrullas, monedas y power-ups aparecen **delante del jugador**, dentro de su cono de visión, a distancia controlada, sin amontonarse y con aparición gradual (sin *pop-in*).
+- **2 jugadores y catálogo completos desde el inicio**: se eliminó el paywall de `$2.500` y la compra de coches/pinturas para acceder; las mejoras y la reparación siguen costando dinero ganado en la partida.
+- **Ciudad y luz**: azoteas con maquinaria, marquesinas de colores en planta baja, pasos de cebra definidos, luz de relleno fría, sombra de contacto bajo cada coche, cámara más cercana y arranque en tramo de calle (no sobre un cruce).
+- **Cero red**: los modelos, texturas y sonidos siguen siendo 100% procedurales; no se copió ningún asset de Poki/Steelpan.
+
+### Para acercarlo al original de verdad
+
+Lo que aquí hay es una reconstrucción hecha a partir de **texto**, no una copia literal. Si quieres que calque el juego real, adjunta al chat **capturas del original** (partida con el coche visto desde atrás, HUD en persecución, garaje y portada) o los assets originales con licencia. Con imágenes de referencia puedo comparar y ajustar coche, cámara, colores y HUD uno por uno.

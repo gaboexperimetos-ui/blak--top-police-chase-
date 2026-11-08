@@ -7,10 +7,39 @@
   var BTP = window.BTP, U = BTP.U, C = BTP.C, M = BTP.Models, P = BTP.Physics;
 
   var TRAFFIC_SHAPES = ['hatch', 'sedan', 'muscle', 'van', 'pickup', 'sport'];
-  var TRAFFIC_COLORS = ['#e7e9ec', '#3d6fb4', '#c34a4a', '#4a9b6c', '#d8c14a', '#7b5ba6', '#2f343c', '#d98a3a'];
+  var TRAFFIC_COLORS = ['#e7e9ec', '#3d6fb4', '#c34a4a', '#4a9b6c', '#d8c14a', '#7b5ba6', '#2f343c', '#d98a3a', '#e3c07a', '#5d7f9c'];
   var DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
   function laneOffset(dx, dz) { return { x: -dz * 4.6, z: dx * 4.6 }; }
+
+  /* Variedad real de vehículos: compactos, berlinas, muscle, furgonetas,
+     pickups, deportivos, taxis, autobuses y camiones de reparto. */
+  function trafficSpec() {
+    var r = Math.random();
+    if (r < .07) return { shape: 'bus', color: U.choice(['#d8c14a', '#4a9b6c', '#3f7fb0']), traffic: true, scale: 1 };
+    if (r < .13) return { shape: 'truck', color: U.choice(['#e6e9ec', '#5b636d', '#c0563c']), traffic: true, scale: 1 };
+    if (r < .22) return { shape: 'sedan', color: '#f5c518', taxi: true, traffic: true, scale: 1.05 };
+    return { shape: U.choice(TRAFFIC_SHAPES), color: U.choice(TRAFFIC_COLORS), traffic: true, scale: 1.05 };
+  }
+  function farFrom(list, x, z, min) {
+    var m2 = min * min;
+    for (var i = 0; i < list.length; i++) {
+      if (U.dist2(list[i].x, list[i].z, x, z) < m2) return false;
+    }
+    return true;
+  }
+  /* Aparición gradual en vez de pop-in. */
+  function beginSpawn(car) {
+    car.spawnT = 0;
+    car.baseScale = car.mesh.scale.x || 1;
+    car.mesh.scale.setScalar(car.baseScale * .35);
+  }
+  function fadeSpawn(car, dt) {
+    if (car.spawnT === undefined) return;
+    car.spawnT = Math.min(1, car.spawnT + dt * 3.2);
+    car.mesh.scale.setScalar(car.baseScale * (.35 + .65 * car.spawnT));
+    if (car.spawnT >= 1) delete car.spawnT;
+  }
 
   /* ============================== TRÁFICO ================================ */
   function Traffic(city, count) {
@@ -25,7 +54,7 @@
     var p = city.randomRoadPoint(Math.random);
     var node = city.nearestIntersection(p.x, p.z);
     var dir = U.choice(DIRS);
-    var model = M.makeCar({ shape: U.choice(TRAFFIC_SHAPES), color: U.choice(TRAFFIC_COLORS), traffic: true, scale: 1.1 });
+    var model = M.makeCar(trafficSpec());
     city.group.add(model.group);
     var dir2 = { dx: dir[0], dz: dir[1] };
     var off = laneOffset(dir2.dx, dir2.dz);
@@ -55,8 +84,13 @@
     car.targetSpeed = U.rand(8, 16);
   };
   Traffic.prototype.recycle = function (car, players) {
-    var city = this.city, pl = players[0] || { x: 0, z: 0 };
-    var p = city.randomRoadPoint(Math.random, pl.x, pl.z, 130, 330);
+    var city = this.city, pl = players[0] || { x: 0, z: 0, heading: 0 };
+    var p = null, self = this;
+    for (var t = 0; t < 10; t++) {
+      var cand = city.roadPointAhead(pl, 115, 270);
+      if (farFrom(self.cars.filter(function (c) { return c !== car; }), cand.x, cand.z, 17)) { p = cand; break; }
+      if (!p) p = cand;
+    }
     var node = city.nearestIntersection(p.x, p.z);
     var d = U.choice(DIRS);
     car.from = node; car.to = city.node(node.i + d[0], node.j + d[1]);
@@ -64,11 +98,14 @@
     car.x = node.x + car.off.x; car.z = node.z + car.off.z;
     car.heading = P.headingTo(d[0], d[1]);
     car.speed = car.targetSpeed = U.rand(8, 16);
+    car.mesh.position.set(car.x, 0, car.z);
+    beginSpawn(car);
   };
   Traffic.prototype.update = function (dt, players) {
     this.time += dt;
     var city = this.city, self = this;
     this.cars.forEach(function (car) {
+      fadeSpawn(car, dt);
       var tx = car.to.x + car.off.x, tz = car.to.z + car.off.z;
       var dx = tx - car.x, dz = tz - car.z, d = Math.hypot(dx, dz);
       if (d < 9) self.pickNext(car);
@@ -163,8 +200,12 @@
   Police.prototype.spawnCar = function (players) {
     var city = this.city;
     var pl = U.choice(players);
-    var ahead = pl.vLong > 2;
-    var p = city.randomRoadPoint(Math.random, pl.x + (ahead ? pl.vx * 5 : 0), pl.z + (ahead ? pl.vz * 5 : 0), 95, 230);
+    var p = null;
+    for (var tries = 0; tries < 8; tries++) {
+      var cand = city.roadPointAhead(pl, 78, 175);
+      if (farFrom(this.cars, cand.x, cand.z, 16)) { p = cand; break; }
+      if (!p) p = cand;
+    }
     var model = M.makeCar({ shape: this.level >= 4 && Math.random() < 0.35 ? 'van' : 'police', police: true, scale: 1.12 });
     city.group.add(model.group);
     var node = city.nearestIntersection(p.x, p.z);
@@ -185,6 +226,7 @@
       BTP.FX.smoke(car.x, 1.2, car.z, '#555');
       BTP.Bus.emit('takedown', { car: car });
     };
+    beginSpawn(car);
     this.cars.push(car);
     return car;
   };
@@ -346,6 +388,7 @@
           car.heading += (hit.nx > 0 ? 1 : -1) * dt;
         }
       });
+      fadeSpawn(car, dt);
       car.mesh.position.set(car.x, 0, car.z);
       car.mesh.rotation.y = car.heading;
       car.model.spin(car.speed, dt, 0);

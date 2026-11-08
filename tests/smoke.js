@@ -99,22 +99,47 @@ if (BTP) {
   BTP.I18n.set('en');
   ok('idioma EN', BTP.I18n.t('menu.play') === 'PLAY');
   BTP.I18n.set('es');
-  ok('comprar coche sin dinero falla', G.buyCar('hyper').ok === false);
+  ok('los 12 coches están desbloqueados', G.CARS.every(c => G.isUnlocked(c.id)));
+  ok('las 12 pinturas están desbloqueadas', G.COLORS.every(c => G.isColorUnlocked(c.hex)));
+  ok('2 jugadores disponible desde el inicio', G.isSplit() === true);
+  ok('seleccionar cualquier coche sin comprar', G.selectCar('hyper') && G.selected().id === 'hyper');
+  ok('no se cobra por un coche ya disponible', G.buyCar('hyper').ok === false);
   S.addCash(100000);
-  ok('comprar coche con dinero', G.buyCar('hyper').ok === true && G.selected().id === 'hyper');
   ok('guardado persiste', (function () {
     const before = S.data.cash;
     S.flush(); S.load();
     return S.data.cash === before && G.isUnlocked('hyper') && G.selected().id === 'hyper';
   })());
-  ok('desbloquear 2 jugadores', G.unlockSplit().ok === true && G.isSplit());
+  ok('migración de partida antigua concede 2P y coches', (function () {
+    localStorage.setItem(BTP.C.SAVE_KEY, JSON.stringify({ v: 1, cash: 321, unlocked: ['muscle'], splitscreen: false }));
+    S.load();
+    return S.data.cash === 321 && G.isSplit() && G.CARS.every(c => G.isUnlocked(c.id));
+  })());
   S.reset();
-  ok('borrar progreso', S.data.cash === 0 && !G.isSplit() && G.selected().id === 'muscle');
+  ok('borrar progreso mantiene todo accesible', S.data.cash === 0 && G.isSplit() &&
+    G.CARS.every(c => G.isUnlocked(c.id)) && G.selected().id === 'muscle');
   ok('modo Original activado por defecto', S.data.settings.classic === true);
   ok('UI.setClassic disponible', typeof BTP.UI.setClassic === 'function');
 }
 
-section('4. Garantía OFFLINE (cero peticiones externas)');
+section('4. Variedad de vehículos, arte y spawns');
+if (BTP) {
+  const src = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
+  const models = src('src/models.js'), ai = src('src/ai.js');
+  const city = src('src/city.js'), game = src('src/game.js');
+  ['muscle', 'sedan', 'hatch', 'sport', 'super', 'hyper', 'police', 'van', 'pickup', 'truck', 'bus']
+    .forEach(sh => ok('silueta 3D propia: ' + sh, new RegExp('\\b' + sh + ':').test(models)));
+  ok('guardabarros y cristales por silueta', models.includes('TorusGeometry') && models.includes('var CAB'));
+  ok('punto de spawn delantero', typeof BTP.City.roadPointAhead === 'function' && ai.includes('roadPointAhead'));
+  ok('aparición gradual sin pop-in', ai.includes('beginSpawn') && ai.includes('fadeSpawn'));
+  ok('spawns sin amontonamiento', ai.includes('farFrom'));
+  ok('tráfico con autobuses, camiones y taxis',
+    /shape: 'bus'/.test(ai) && /shape: 'truck'/.test(ai) && /taxi: true/.test(ai));
+  ok('ciudad con azoteas y marquesinas', city.includes('awnings') && city.includes('units'));
+  ok('luz de relleno y cámara más cercana', game.includes('fill') && game.includes('9.6'));
+}
+
+section('5. Garantía OFFLINE (cero peticiones externas)');
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const refs = [...html.matchAll(/(?:src|href)\s*=\s*"([^"]+)"/g)].map(m => m[1]);
 ok('sin URLs http/https en index.html', !refs.some(r => /^https?:/i.test(r)), refs.filter(r => /^https?:/i.test(r)).join(', '));

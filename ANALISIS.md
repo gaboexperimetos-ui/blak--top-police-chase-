@@ -72,10 +72,10 @@ Ciudad abierta **low-poly** con: calles anchas y avenidas, **callejones**, **mue
 
 ## 6. Progresión y garaje
 
-- **12 coches desbloqueables**, cada uno con sus propias estadísticas de **velocidad, agarre, peso y salud**. Los ligeros cambian de dirección rápido; los pesados sobreviven mejor a los impactos y atraviesan bloqueos [1](https://www.lllgame.com/racing/41427.html).
+- **12 coches** (aquí disponibles desde el primer arranque), cada uno con sus propias estadísticas de **velocidad, agarre, peso y salud** y una silueta 3D diferenciada. Los ligeros cambian de dirección rápido; los pesados sobreviven mejor a los impactos y atraviesan bloqueos [1](https://www.lllgame.com/racing/41427.html).
 - **12 colores de pintura**.
 - **Monedas / dinero** para comprar coches, pintura y (según versión) mejoras de velocidad, manejo, durabilidad y nitro [5](https://poku.games/blacktop-police-chase/), [4](https://bizofgames.com/game/blacktop-police-chase/).
-- **Pantalla dividida para 2 jugadores** que se desbloquea gastando dinero ganado [1](https://poki.org.mx/en/blacktop-police-chase-free/).
+- **Pantalla dividida para 2 jugadores** que en algunas versiones se desbloquea gastando dinero ganado [1](https://poki.org.mx/en/blacktop-police-chase-free/); en este clon se concede desde el inicio para que no quede oculto tras un paywall.
 - Puntuación, multiplicadores por escapadas consecutivas y récords.
 - Anuncios opcionales para reparar el coche (mecánica de monetzación de la versión online).
 
@@ -101,7 +101,7 @@ Ciudad abierta **low-poly** con: calles anchas y avenidas, **callejones**, **mue
 | 14 | Callejones, parques, muelles, puente, monorraíl | Generación procedural con InstancedMesh + textura de mapa | `city.js`, `models.js` |
 | 15 | Edificios con ventanas, farolas, semáforos, árboles, barcos, contenedores | Geometría procedural + fachadas en canvas | `city.js`, `models.js` |
 | 16 | **12 coches** con velocidad/agarre/peso/salud | Catálogo completo con estadísticas y siluetas distintas | `garage.js`, `models.js` |
-| 17 | **12 pinturas** | Paleta desbloqueable, aplicación en el modelo 3D y vista previa | `garage.js`, `ui.js` |
+| 17 | **12 pinturas** | Paleta completa disponible, aplicación en el modelo 3D y vista previa | `garage.js`, `ui.js` |
 | 18 | Mejoras de coche | 4 líneas × 5 niveles (velocidad, agarre, blindaje, nitro) | `garage.js` |
 | 19 | Monedas `$` por la ciudad | 132 puntos + ruta dinámica, recogida, respawn y power-ups | `city.js`, `missions.js` |
 | 20 | Dinero, puntuación y multiplicadores | Efectivo persistente, combos, derrapes y adelantamientos | `missions.js`, `save (core.js)` |
@@ -112,7 +112,7 @@ Ciudad abierta **low-poly** con: calles anchas y avenidas, **callejones**, **mue
 | 25 | Controles `WASD`/flechas, `Espacio`, pausa | Mapeo completo + `Esc`, `P`, `C`, `M`, `H`, `R` | `game.js` |
 | 26 | Controles táctiles en móvil | Botones de dirección, acelerador, freno, nitro y mirar atrás | `ui.js`, `index.html` |
 | 27 | Menús controlados por teclado | Navegación con flechas/WASD + Enter/Esc en todas las pantallas | `ui.js` |
-| 28 | **Pantalla dividida 2 jugadores** de pago | Desbloqueo por `$2.500`, 2 cámaras con `scissor`, HUD por jugador | `garage.js`, `game.js` |
+| 28 | **Pantalla dividida 2 jugadores** | Disponible desde el inicio, 2 cámaras con `scissor`, HUD y coches `01`/`02` por jugador | `garage.js`, `game.js` |
 | 29 | Minimap con objetivo y policía | Canvas con mapa real, patrullas, bloqueos, monedas y bancos | `ui.js`, `city.js` |
 | 30 | Pausa / pantalla completa / ajustes | Pantallas dedicadas, volumen, calidad, sombras, cámara, idioma | `ui.js`, `game.js` |
 | 31 | Guardado de progreso | `localStorage` con coches, pinturas, mejoras, dinero y récords | `core.js`, `garage.js` |
@@ -171,8 +171,8 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 
 ## 10. Verificación realizada
 
-- `npm test` → **72 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original y auditoría de que no hay URLs externas).
-- Chromium headless con WebGL (SwiftShader): menú, partida, conducción a 144 km/h, ciclo completo ladrón→banco→botín→escondite, 60 s simulados de persecución al nivel 5 con bloqueos/pinchos/helicóptero, garaje, 4 modos, 2 jugadores y resultados → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
+- `npm test` → **93 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
+- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 5 con bloqueos/pinchos/helicóptero, garaje con 12 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v3 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
 
 ---
 
@@ -187,3 +187,9 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 - [4](https://bizofgames.com/game/blacktop-police-chase/) — modos de juego y mejora de vehículos.
 - [5](https://poku.games/blacktop-police-chase/) — nitro, mejoras y controles táctiles.
 - [1](https://poki.org.mx/en/blacktop-police-chase-free/) — desbloqueo de pantalla dividida de pago.
+
+### 10.1 Revisión de arte y spawns
+
+Tras la primera entrega se detectó que el aspecto era demasiado genérico: un único modelo de caja para todos los vehículos, spawns aleatorios por distancia y contenido bloqueado tras pagos. La revisión actual añade 11 perfiles de carrocería con cabinas, cristales, guardabarros, luces y detalles por tipo; tráfico con autobuses, camiones, taxis, furgonetas y pickups; `City.roadPointAhead()` para generar tráfico, policía y monedas dentro del cono de visión; aparición gradual (`beginSpawn`/`fadeSpawn`) y control de solapes (`farFrom`); azoteas, marquesinas, luz de relleno, sombra de contacto y cámara más cercana. Los 12 coches, las 12 pinturas y la pantalla dividida se conceden al arrancar, incluida la migración de partidas guardadas con la versión anterior.
+
+**Límite sin resolver**: sigue sin ser una copia bit a bit. Para igualar el original hacen falta sus capturas de referencia o sus assets con licencia; el análisis de esta sección se construyó a partir de descripciones textuales de fuentes públicas.

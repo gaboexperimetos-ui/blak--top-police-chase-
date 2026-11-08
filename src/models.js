@@ -89,6 +89,18 @@
     });
   };
 
+  M.shadowTexture = function () {
+    if (cache.shadow) return cache.shadow;
+    cache.shadow = M.canvasTexture(128, 128, function (g, w, h) {
+      var grad = g.createRadialGradient(64, 64, 8, 64, 64, 62);
+      grad.addColorStop(0, 'rgba(0,0,0,0.55)');
+      grad.addColorStop(0.55, 'rgba(0,0,0,0.28)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = grad; g.fillRect(0, 0, w, h);
+    });
+    return cache.shadow;
+  };
+
   M.numberTexture = function (num) {
     var key = 'num' + num;
     if (cache[key]) return cache[key];
@@ -118,15 +130,33 @@
              [1.3, .78], [2.45, .68], [2.5, .54], [2.5, .28]],
     police: [[-2.35, .42], [-2.35, .98], [-1.5, 1.04], [-.8, 1.62], [.6, 1.64],
              [1.05, 1.08], [2.15, 1.0], [2.35, .88], [2.35, .42]],
-    van:    [[-2.5, .42], [-2.5, 1.95], [1.95, 1.95], [2.5, 1.55], [2.5, .42]],
-    pickup: [[-2.5, .42], [-2.5, 1.02], [-1.6, 1.05], [-1.0, 1.75], [.25, 1.75],
-             [.75, 1.05], [2.5, 1.02], [2.5, .42]],
-    truck:  [[-2.9, .48], [-2.9, 2.15], [-1.05, 2.15], [-.55, 1.15], [2.9, 1.12], [2.9, .48]]
+    van:    [[-2.6, .42], [-2.6, 1.95], [1.85, 1.95], [2.45, 1.52], [2.6, 1.05], [2.6, .42]],
+    pickup: [[-2.6, .42], [-2.6, 1.08], [.15, 1.08], [.15, 1.78], [1.35, 1.78],
+             [1.75, 1.05], [2.6, 1.0], [2.6, .42]],
+    truck:  [[-2.9, .48], [-2.9, 2.15], [-1.05, 2.15], [-.55, 1.38], [1.0, 1.38],
+             [1.35, 1.05], [2.9, 1.02], [2.9, .48]],
+    bus:    [[-4.2, .42], [-4.2, 2.35], [3.9, 2.35], [4.2, 1.95], [4.2, .42]]
   };
   var WIDTHS = { muscle: 1.95, sedan: 1.9, hatch: 1.85, sport: 2.0, super: 2.05, hyper: 2.05,
-    police: 1.95, van: 2.1, pickup: 2.1, truck: 2.6 };
+    police: 1.95, van: 2.1, pickup: 2.1, truck: 2.6, bus: 2.35 };
   var WB = { muscle: 1.45, sedan: 1.42, hatch: 1.25, sport: 1.5, super: 1.55, hyper: 1.55,
-    police: 1.45, van: 1.6, pickup: 1.6, truck: 1.7 };
+    police: 1.45, van: 1.62, pickup: 1.7, truck: 1.9, bus: 2.9 };
+  var WHEEL_R = { muscle: .56, sedan: .55, hatch: .54, sport: .55, super: .56, hyper: .56,
+    police: .56, van: .60, pickup: .62, truck: .68, bus: .68 };
+  // Dónde va la cabina de cada silueta (Z negativo = morro).
+  var CAB = {
+    muscle: { wf: -.82, wr: 1.02, gy: 1.30, gh: .70, lampY: .82, sideLen: 1.85 },
+    sedan:  { wf: -.78, wr: 1.05, gy: 1.30, gh: .70, lampY: .84, sideLen: 1.95 },
+    hatch:  { wf: -.95, wr: .92,  gy: 1.27, gh: .66, lampY: .84, sideLen: 1.80 },
+    sport:  { wf: -.62, wr: .72,  gy: 1.10, gh: .52, lampY: .66, sideLen: 1.35 },
+    super:  { wf: -.55, wr: .65,  gy: 1.05, gh: .50, lampY: .62, sideLen: 1.30 },
+    hyper:  { wf: -.52, wr: .62,  gy: 1.03, gh: .50, lampY: .60, sideLen: 1.25 },
+    police: { wf: -.82, wr: 1.02, gy: 1.30, gh: .70, lampY: .84, sideLen: 1.85 },
+    van:    { wf: -2.02, wr: -.85, gy: 1.50, gh: .82, lampY: .88, sideLen: 1.20 },
+    pickup: { wf: -1.30, wr: -.18, gy: 1.42, gh: .72, lampY: .86, sideLen: 1.15 },
+    truck:  { wf: -2.45, wr: .40, gy: 1.30, gh: .74, lampY: .92, sideLen: 2.35 },
+    bus:    { wf: -3.75, wr: 3.75, gy: 1.55, gh: 1.05, lampY: .90, sideLen: 6.6 }
+  };
 
   function bodyGeometry(shape) {
     var key = 'body_' + shape;
@@ -147,158 +177,257 @@
   }
 
   /* -------------------------------- Coche -------------------------------- */
+  /* Materiales compartidos (los que nunca se modifican por coche). */
+  var MATS = {};
+  function shared(key, color, opts) {
+    if (!MATS[key]) MATS[key] = mat(color, opts);
+    return MATS[key];
+  }
+  function profileBounds(shape) {
+    var pts = PROFILES[shape], uMin = 1e9, uMax = -1e9, vMax = 0;
+    pts.forEach(function (q) {
+      if (q[0] < uMin) uMin = q[0];
+      if (q[0] > uMax) uMax = q[0];
+      if (q[1] > vMax) vMax = q[1];
+    });
+    return { nose: -uMax, tail: -uMin, roof: vMax };
+  }
+
   /**
-   * spec: {shape, color, police, traffic, number, scale, siren, spikes}
-   * Devuelve {group, wheels[], steer[], paint[], brakeLights[], headlights[],
-   *           siren[], setColor(), setSiren(), setBrake(), spin(), length, width}
+   * spec: {shape, color, police, traffic, taxi, number, scale}
+   * Cada silueta tiene su propia cabina, luces, guardabarros y detalles:
+   * muscle, sedán, compacto, deportivo, super, hyper, patrulla, furgoneta,
+   * pickup, camión blindado y autobús (tráfico).
    */
   M.makeCar = function (spec) {
     spec = spec || {};
     var shape = PROFILES[spec.shape] ? spec.shape : 'muscle';
-    var police = !!spec.police;
-    var traffic = !!spec.traffic;
+    var police = !!spec.police, traffic = !!spec.traffic, taxi = !!spec.taxi;
     var scale = spec.scale || 1;
-    var color = spec.color || (police ? '#22262e' : '#f57c1f');
+    var color = spec.color || (police ? '#22262e' : taxi ? '#f5c518' : '#f57c1f');
+    var detail = !traffic;
+    var b = profileBounds(shape);
+    var w = WIDTHS[shape] || 1.95, wb = WB[shape] || 1.45;
+    var wr = WHEEL_R[shape] || .56, wy = wr;
+    var cab = CAB[shape] || CAB.muscle;
+    var nose = b.nose, tail = b.tail, roofY = b.roof, len = tail - nose;
+    var accentColor = U.hexToRgb(color) ? shade(color, .76) : '#d06010';
+
     var g = new THREE.Group();
     g.scale.setScalar(scale);
-    var w = WIDTHS[shape], wb = WB[shape];
     var paintMat = mat(color);
+    var accentMat = mat(police ? '#f2a71b' : accentColor);
     var paint = [];
-    var accentMat = mat(police ? '#f2a71b' : U.hexToRgb(color) ? shade(color, 0.78) : '#d06010');
-    var dark = mat('#1b1e24'), glass = mat('#22303f', { transparent: true, opacity: 0.92 });
-    var chrome = mat('#c9ced6'), rubber = mat('#17191c');
+    var dark = shared('dark', '#1b1e24');
+    var black = shared('black', '#101216');
+    var glass = shared('glass', '#22303f', { transparent: true, opacity: .92 });
+    var chrome = shared('chrome', '#c9ced6');
+    var rubber = shared('rubber', '#17191c');
 
-    // Carrocería
+    /* Carrocería extrusionada con la silueta propia del modelo. */
     var body = new THREE.Mesh(bodyGeometry(shape), paintMat);
     body.castShadow = true; body.receiveShadow = true;
     g.add(body); paint.push(body);
-    // Banda inferior / parachoques
-    var bumperF = box(w * 0.96, 0.22, 0.25, chrome, 0, 0.52, -2.42, g);
-    var bumperR = box(w * 0.96, 0.22, 0.25, chrome, 0, 0.52, 2.42, g);
-    if (!traffic) {
-      box(w * 0.98, 0.12, 0.14, dark, 0, 0.38, -2.5, g);
-      box(w * 0.98, 0.12, 0.14, dark, 0, 0.38, 2.5, g);
+
+    /* Bajos, faldones laterales y parachoques. */
+    box(w + .06, .16, len - .3, black, 0, .40, (nose + tail) / 2, g);
+    [-1, 1].forEach(function (s) {
+      box(.12, .20, len * .78, dark, s * (w / 2 + .01), .46, 0, g);
+    });
+    box(w * .98, .24, .26, chrome, 0, .54, nose - .08, g);
+    box(w * .98, .24, .26, chrome, 0, .54, tail + .08, g);
+    if (detail) {
+      box(w * .80, .14, .14, dark, 0, .74, nose - .11, g);   // parrilla
+      box(w * 1.02, .14, .16, dark, 0, .42, nose - .20, g);  // defensa baja
     }
-    // Capó / techo en contraste (detalle low-poly)
-    var hood = box(w * 0.82, 0.06, 1.15, accentMat, 0, 1.0, -1.72, g);
-    hood.rotation.x = -0.045;
-    g.add(hood); paint.push(hood);
-    if (police) {
-      // Capó naranja, puertas blancas y banda negra, como en el original
-      var white = mat('#f4f5f7');
-      box(0.06, 0.92, 1.5, white, -w / 2 - 0.005, 1.02, 0.05, g);
-      box(0.06, 0.92, 1.5, white, w / 2 + 0.005, 1.02, 0.05, g);
-      box(w + 0.02, 0.22, 0.9, dark, 0, 0.72, 0.05, g);
-      // escudo circular en las puertas
+
+    /* Cristales: parabrisas, luneta y ventanillas (posición por silueta). */
+    var windshield = box(w * .80, cab.gh, .09, glass, 0, cab.gy, cab.wf, g);
+    windshield.rotation.x = -.5;
+    var rearGlass = box(w * .80, cab.gh * .86, .09, glass, 0, cab.gy, cab.wr, g);
+    rearGlass.rotation.x = .5;
+    var sideCount = shape === 'bus' ? 7 : 1;
+    for (var si = 0; si < sideCount; si++) {
+      var zz = shape === 'bus' ? (-3.05 + si * 1.02) : (cab.wf + cab.wr) / 2;
+      var sl = shape === 'bus' ? .80 : cab.sideLen;
       [-1, 1].forEach(function (s) {
-        var badge = new THREE.Mesh(new THREE.CircleGeometry(0.34, 12), basic('#e9eef5'));
-        badge.position.set(s * (w / 2 + 0.045), 1.12, 0.05);
-        badge.rotation.y = s * Math.PI / 2; g.add(badge);
-        var dot = new THREE.Mesh(new THREE.CircleGeometry(0.16, 10), basic('#2f6fd0'));
-        dot.position.set(s * (w / 2 + 0.05), 1.12, 0.05);
-        dot.rotation.y = s * Math.PI / 2; g.add(dot);
+        box(.07, cab.gh * .76, sl, glass, s * (w / 2 + .012), cab.gy + .01, zz, g);
+        if (detail) box(.09, .06, sl + .08, dark, s * (w / 2 + .02), cab.gy - cab.gh * .41, zz, g);
       });
     }
-    // Cristales: parabrisas, luneta y ventanillas laterales
-    var windshield = box(w * 0.78, 0.72, 0.08, glass, 0, 1.32, -0.78, g);
-    windshield.rotation.x = -0.55;
-    var rearGlass = box(w * 0.78, 0.62, 0.08, glass, 0, 1.32, 1.02, g);
-    rearGlass.rotation.x = 0.55;
-    [-1, 1].forEach(function (s) {
-      var win = box(0.06, 0.52, 1.25, glass, s * (w / 2 + 0.01), 1.34, 0.06, g);
-      win.rotation.z = s * 0.02;
-    });
-    // Faros y pilotos
-    var hm = basic('#ffe14d'), tm = basic('#7a1414'), bm = basic('#ff2b1d');
+    /* Techo en contraste para dar volumen a la cabina. */
+    if (shape !== 'truck' && shape !== 'van' && shape !== 'bus') {
+      var roof = box(w * .72, .05, Math.max(.5, cab.wr - cab.wf), accentMat,
+        0, roofY + .015, (cab.wf + cab.wr) / 2, g);
+      paint.push(roof);
+    }
+
+    /* Faros y pilotos (materiales propios: cambian al frenar). */
     var headlights = [], brakeLights = [];
     [-1, 1].forEach(function (s) {
-      var h = box(0.44, 0.18, 0.1, hm.clone(), s * w * 0.32, 0.82, -2.44, g);
-      headlights.push(h);
-      var t = box(0.44, 0.16, 0.1, tm.clone(), s * w * 0.32, 0.9, 2.45, g);
-      brakeLights.push(t);
-      var b = box(0.3, 0.1, 0.06, bm.clone(), s * w * 0.32, 0.72, 2.5, g);
-      brakeLights.push(b);
+      headlights.push(box(.42, .17, .11, basic('#ffe14d'), s * w * .32, cab.lampY, nose - .10, g));
+      brakeLights.push(box(.42, .15, .11, basic('#7a1414'), s * w * .32, cab.lampY + .06, tail + .10, g));
+      brakeLights.push(box(.28, .09, .07, basic('#ff2b1d'), s * w * .32, cab.lampY - .10, tail + .14, g));
     });
-    // Ruedas
+
+    /* Guardabarros, ruedas con buje y eje direccional delantero. */
     var wheels = [], steer = [];
     [-1, 1].forEach(function (front) {
       [-1, 1].forEach(function (side) {
+        box(.10, wr * 1.8, wr * 2.1, black, side * (w / 2 + .012), wy, front * wb, g);
+        var arch = new THREE.Mesh(new THREE.TorusGeometry(wr * 1.10, .10, 5, 12, Math.PI), dark);
+        arch.rotation.y = Math.PI / 2;
+        arch.position.set(side * (w / 2 + .02), wy, front * wb);
+        g.add(arch);
         var pivot = new THREE.Group();
-        pivot.position.set(side * (w / 2 + 0.06), 0.56, front * wb);
+        pivot.position.set(side * (w / 2 + .06), wy, front * wb);
         g.add(pivot);
         var spin = new THREE.Group(); pivot.add(spin);
-        var tire = cyl(0.56, 0.56, 0.32, 10, rubber, 0, 0, 0, spin);
-        tire.rotation.z = Math.PI / 2;
-        var hub = cyl(0.3, 0.3, 0.34, 10, chrome, 0, 0, 0, spin);
-        hub.rotation.z = Math.PI / 2;
-        var cap = cyl(0.14, 0.14, 0.36, 8, dark, 0, 0, 0, spin);
-        cap.rotation.z = Math.PI / 2;
+        var tire = cyl(wr, wr, .32, 12, rubber, 0, 0, 0, spin); tire.rotation.z = Math.PI / 2;
+        var hub = cyl(wr * .54, wr * .54, .34, 12, chrome, 0, 0, 0, spin); hub.rotation.z = Math.PI / 2;
+        var cap = cyl(wr * .24, wr * .24, .36, 8, dark, 0, 0, 0, spin); cap.rotation.z = Math.PI / 2;
         wheels.push(spin);
-        if (front === -1) steer.push(pivot); // eje delantero en -Z
+        if (front === -1) steer.push(pivot);
       });
     });
-    // Detalles según tipo
+
+    /* ---------------- Detalles exclusivos de cada vehículo ---------------- */
+    if (shape === 'muscle') {
+      box(.72, .18, .62, dark, 0, 1.09, -1.72, g);                 // toma de aire
+      [-.32, .32].forEach(function (x) { box(.18, .03, 1.25, basic('#ffffff'), x, 1.04, -1.68, g); });
+      box(w * .78, .08, .30, dark, 0, 1.08, tail - .22, g);        // alerón trasero
+      if (detail) [-1, 1].forEach(function (s) {
+        cyl(.09, .09, .22, 8, chrome, s * w * .34, .48, tail + .02, g).rotation.x = Math.PI / 2;
+      });
+    }
     if (shape === 'sport' || shape === 'super' || shape === 'hyper') {
-      box(w * 0.9, 0.1, 0.42, dark, 0, 1.12, 2.05, g); // alerón
-      box(0.1, 0.35, 0.1, dark, -w * 0.36, 0.95, 2.05, g);
-      box(0.1, 0.35, 0.1, dark, w * 0.36, 0.95, 2.05, g);
+      box(w * .92, .09, .40, dark, 0, 1.12, tail - .18, g);        // alerón
+      [-1, 1].forEach(function (s) {
+        box(.10, .34, .10, dark, s * w * .36, .94, tail - .18, g);
+        box(.12, .18, 1.30, dark, s * (w / 2 + .02), .40, 0, g);   // faldón
+        box(.26, .12, .5, dark, s * w * .40, .72, -1.6, g);         // toma lateral
+      });
+      box(w * 1.02, .08, .30, black, 0, .38, nose - .05, g);        // splitter
     }
-    if (shape === 'truck' || shape === 'van' || shape === 'pickup') {
-      box(w * 0.9, 0.1, 1.0, dark, 0, 1.05, 1.55, g); // caja / batea
+    if (shape === 'van') {
+      [-1, 1].forEach(function (s) {
+        box(.08, .10, len * .72, chrome, s * w * .32, roofY + .08, 0, g);  // baca
+        box(.06, 1.15, .05, dark, s * (w / 2 + .02), 1.20, -.35, g);      // puerta corredera
+      });
+      box(w * .88, .05, .06, dark, 0, 1.28, tail + .02, g);                // portones
+      box(.05, 1.6, .06, dark, 0, 1.25, tail + .02, g);
     }
+    if (shape === 'pickup') {
+      var bedZ = (tail + cab.wr) / 2, bedLen = tail - cab.wr;
+      [-1, 1].forEach(function (s) {
+        box(.10, .46, bedLen, paintMat, s * (w / 2 - .04), 1.30, bedZ, g);
+      });
+      box(w * .94, .46, .10, paintMat, 0, 1.30, tail - .05, g);            // portón
+      box(w * .92, .05, bedLen, dark, 0, 1.10, bedZ, g);                    // batea
+      box(w * .86, .10, .10, chrome, 0, 1.88, cab.wr - .05, g);             // barra
+    }
+    if (shape === 'truck') {
+      for (var r = 0; r < 5; r++) {
+        var rz = -2.35 + r * .58;
+        [-1, 1].forEach(function (s) { box(.08, 1.45, .10, chrome, s * (w / 2 + .01), 1.52, rz, g); });
+      }
+      box(w * 1.06, .30, .18, chrome, 0, .74, nose - .18, g);              // defensa
+      box(w * .98, .10, .30, dark, 0, roofY + .05, -2.1, g);
+    }
+    if (shape === 'bus') {
+      box(w * .96, .20, len - .5, accentMat, 0, .96, 0, g);                 // franja
+      box(w * .55, .30, .09, black, 0, roofY - .30, nose - .06, g);         // letrero
+      [-1, 1].forEach(function (s) { box(.08, 1.8, .08, chrome, s * (w / 2 + .01), 1.55, tail - .25, g); });
+    }
+    if (taxi) {
+      box(.95, .22, .42, shared('taxiSign', '#ffe14d'), 0, roofY + .15, (cab.wf + cab.wr) / 2, g);
+      [-1, 1].forEach(function (s) {
+        for (var q = 0; q < 6; q++) box(.08, .12, .26, black, s * (w / 2 + .02), .95, (q - 2.5) * .62, g);
+      });
+    }
+    if (police) {
+      var white = shared('policeWhite', '#f4f5f7');
+      [-1, 1].forEach(function (s) {
+        box(.06, .92, 1.5, white, s * (w / 2 + .005), 1.02, .05, g);
+        var badge = new THREE.Mesh(new THREE.CircleGeometry(.34, 12), basic('#e9eef5'));
+        badge.position.set(s * (w / 2 + .045), 1.12, .05);
+        badge.rotation.y = s * Math.PI / 2; g.add(badge);
+        var dot = new THREE.Mesh(new THREE.CircleGeometry(.16, 10), basic('#2f6fd0'));
+        dot.position.set(s * (w / 2 + .05), 1.12, .05);
+        dot.rotation.y = s * Math.PI / 2; g.add(dot);
+      });
+      box(w + .02, .22, .9, dark, 0, .72, .05, g);
+      box(w * 1.04, .24, .18, chrome, 0, .64, nose - .16, g);              // defensa reforzada
+      [-1, 1].forEach(function (s) { box(.12, .38, .12, dark, s * w * .40, .84, nose - .12, g); });
+      box(.16, .16, 1.0, dark, 0, roofY + .06, .02, g);
+      var red = box(.22, .18, .44, basic('#ff2020'), -.32, roofY + .08, .02, g);
+      var blue = box(.22, .18, .44, basic('#2050ff'), .32, roofY + .08, .02, g);
+      var siren = [red, blue];
+    } else { var siren = []; }
+
+    /* Número de competición (solo coches del jugador). */
     if (spec.number !== undefined && !traffic) {
       [-1, 1].forEach(function (s) {
-        var n = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 0.72),
-          basic('#ffffff', { map: M.numberTexture(spec.number), transparent: true, alphaTest: 0.2, side: THREE.DoubleSide }));
-        n.position.set(s * (w / 2 + 0.02), 1.02, -0.15);
+        var n = new THREE.Mesh(new THREE.PlaneGeometry(.72, .72),
+          basic('#ffffff', { map: M.numberTexture(spec.number), transparent: true, alphaTest: .2, side: THREE.DoubleSide }));
+        n.position.set(s * (w / 2 + .025), 1.02, -.15);
         n.rotation.y = s * Math.PI / 2; g.add(n);
       });
-      // Número también en el maletero (visible desde la cámara de persecución)
-      var rn = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7),
-        basic('#ffffff', { map: M.numberTexture(spec.number), transparent: true, alphaTest: 0.2, side: THREE.DoubleSide }));
-      rn.position.set(0, 0.84, 2.46); g.add(rn);
-      // franjas de competición
-      [-0.32, 0.32].forEach(function (x) { box(0.18, 0.03, 1.2, basic('#ffffff'), x, 1.04, -1.7, g); });
-      // Parrilla negra y defensas delanteras del muscle car clásico
-      box(w * 0.72, 0.16, 0.12, dark, 0, 0.74, -2.5, g);
-      box(w * 1.02, 0.14, 0.16, dark, 0, 0.42, -2.62, g);
+      var rn = new THREE.Mesh(new THREE.PlaneGeometry(.70, .70),
+        basic('#ffffff', { map: M.numberTexture(spec.number), transparent: true, alphaTest: .2, side: THREE.DoubleSide }));
+      rn.position.set(0, .84, tail + .12); g.add(rn);
+    }
+
+    /* Sombra suave de contacto: el coche deja de flotar sobre el asfalto. */
+    var shadow = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.75, len * 1.18),
+      basic('#000000', { map: M.shadowTexture(), transparent: true, opacity: .62, depthWrite: false }));
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = .028;
+    g.add(shadow);
+
+    /* Trasera: marcos de pilotos, matrícula y pilares C (rompe el rectángulo). */
+    if (shape !== 'bus' && shape !== 'truck' && shape !== 'van' && shape !== 'pickup') {
       [-1, 1].forEach(function (s) {
-        box(0.13, 0.55, 0.13, dark, s * w * 0.34, 0.62, -2.56, g);
+        box(.50, .26, .10, dark, s * w * .32, cab.lampY + .06, tail + .05, g);
+        var cp = box(w * .13, cab.gh * .86, .12, paintMat, s * w * .355, cab.gy, cab.wr + .05, g);
+        cp.rotation.z = s * .16;
+      });
+      box(.56, .17, .05, shared('plate', '#e9eef5'), 0, .70, tail + .16, g);
+      box(w * .88, .05, .42, accentMat, 0, 1.03, tail - .34, g);  // tapa del maletero
+    }
+
+    /* Retrovisores y tiradores (solo coches principales, para no saturar). */
+    if (detail && shape !== 'bus' && shape !== 'truck') {
+      [-1, 1].forEach(function (s) {
+        box(.18, .12, .26, dark, s * (w / 2 + .16), cab.gy + .04, cab.wf + .18, g);
+        box(.06, .05, .28, chrome, s * (w / 2 + .02), 1.00, .48, g);
       });
     }
-    // Luces de policía y parachoques reforzado
-    var siren = [];
-    if (police) {
-      var bar = box(0.16, 0.16, 1.0, dark, 0, 1.7, 0.02, g);
-      var red = box(0.22, 0.18, 0.44, basic('#ff2020'), -0.32, 1.72, 0.02, g);
-      var blue = box(0.22, 0.18, 0.44, basic('#2050ff'), 0.32, 1.72, 0.02, g);
-      siren = [red, blue];
-      box(w * 1.0, 0.22, 0.16, chrome, 0, 0.62, -2.6, g); // defensa
-      box(0.1, 0.35, 0.1, dark, -w * 0.4, 0.82, -2.55, g);
-      box(0.1, 0.35, 0.1, dark, w * 0.4, 0.82, -2.55, g);
-    }
-    // Conductor (simple) para coches del jugador
+
+    /* Conductor en los coches del jugador. */
     var driver = null;
-    if (!traffic && !police && shape !== 'truck') {
+    if (!traffic && !police && shape !== 'truck' && shape !== 'bus') {
       driver = new THREE.Group();
-      cyl(0.26, 0.3, 0.5, 8, mat('#2a3548'), 0, 0.25, 0, driver);
-      var head = new THREE.Mesh(new THREE.SphereGeometry(0.19, 8, 6), mat('#e8bd94'));
-      head.position.y = 0.6; driver.add(head);
-      driver.position.set(0, 0.82, 0.15);
+      cyl(.26, .30, .50, 8, mat('#2a3548'), 0, .25, 0, driver);
+      var head = new THREE.Mesh(new THREE.SphereGeometry(.19, 8, 6), mat('#e8bd94'));
+      head.position.y = .60; driver.add(head);
+      driver.position.set(0, .82, .15);
       g.add(driver);
     }
 
-    var obj = {
+    return {
       group: g, wheels: wheels, steer: steer, paint: paint, body: body,
       brakeLights: brakeLights, headlights: headlights, siren: siren, driver: driver,
-      length: 4.9, width: w, shape: shape,
+      length: len, width: w, shape: shape, baseScale: scale,
       paintMaterial: paintMat, accentMaterial: accentMat,
       setColor: function (hex) {
         paintMat.color.set(hex);
-        accentMat.color.set(shade(hex, 0.78));
+        accentMat.color.set(U.hexToRgb(hex) ? shade(hex, .76) : '#d06010');
       },
       setBrake: function (on) {
-        brakeLights.forEach(function (m, i) { m.material.color.set(on ? (i % 2 ? '#ff5a3c' : '#ff2b1d') : (i % 2 ? '#a01c14' : '#7a1414')); });
+        brakeLights.forEach(function (m, i) {
+          m.material.color.set(on ? (i % 2 ? '#ff5a3c' : '#ff2b1d') : (i % 2 ? '#a01c14' : '#7a1414'));
+        });
       },
       setSiren: function (time) {
         if (!siren.length) return;
@@ -307,11 +436,10 @@
         siren[1].material.color.set(a ? '#101050' : '#2050ff');
       },
       spin: function (v, dt, steerAngle) {
-        wheels.forEach(function (wgrp) { wgrp.rotation.x -= v * dt / 0.56; });
+        wheels.forEach(function (wg) { wg.rotation.x -= v * dt / .56; });
         steer.forEach(function (p) { p.rotation.y = steerAngle || 0; });
       }
     };
-    return obj;
   };
 
   function shade(hex, f) {

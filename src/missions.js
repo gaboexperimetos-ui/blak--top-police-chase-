@@ -79,7 +79,7 @@
         if (U.dist(s.x, s.z, pl.x, pl.z) < 330) { city.spawnCoin(s.x, s.z); count++; }
       }
       for (var k = 0; k < 14; k++) {
-        var p = city.randomRoadPoint(Math.random, pl.x, pl.z, 40, 260);
+        var p = city.roadPointAhead(pl, 45, 240);
         var kind = k % 7 === 0 ? 'nitro' : (k % 11 === 0 ? 'shield' : 'coin');
         city.spawnCoin(p.x, p.z, kind);
       }

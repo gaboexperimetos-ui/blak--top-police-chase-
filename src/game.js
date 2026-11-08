@@ -29,8 +29,11 @@
       scene.background = new THREE.Color('#8ec8ea');
       scene.fog = new THREE.Fog('#8ec8ea', 210, 690);
 
-      var hemi = new THREE.HemisphereLight(0xd9ecff, 0x60745c, 0.95); scene.add(hemi);
-      var sun = this.sun = new THREE.DirectionalLight(0xfff3dd, 1.05);
+      var hemi = new THREE.HemisphereLight(0xd9ecff, 0x60745c, 0.78); scene.add(hemi);
+      // Luz de relleno fría: da volumen a las fachadas y evita el aspecto plano.
+      var fill = new THREE.DirectionalLight(0xbcd8ff, 0.34);
+      fill.position.set(-140, 120, -80); scene.add(fill);
+      var sun = this.sun = new THREE.DirectionalLight(0xfff3dd, 1.28);
       sun.position.set(160, 260, 110);
       sun.castShadow = true;
       sun.shadow.mapSize.set(1024, 1024);
@@ -176,7 +179,7 @@
       specs.forEach(function (spec, i) {
         var car = new P.Car(spec, self.city, {
           id: i === 0 ? 'p1' : 'p2', label: i === 0 ? 'J1' : 'J2',
-          x: 0, z: i === 0 ? 0 : 18, heading: 0,
+          x: 0, z: i === 0 ? -24 : -6, heading: 0,
           number: spec.number
         });
         car.arrest = 0;
@@ -309,8 +312,8 @@
       var fx = -Math.sin(p.heading), fz = -Math.cos(p.heading);
       var ctrl = this._controls && this._controls[i];
       var look = !!(ctrl && ctrl.look);
-      var dist = mode === 'hood' ? 1.2 : (mode === 'near' ? 8.0 : 11.5);
-      var height = mode === 'hood' ? 2.3 : (mode === 'near' ? 4.2 : 5.9);
+      var dist = mode === 'hood' ? 1.2 : (mode === 'near' ? 7.0 : 9.6);
+      var height = mode === 'hood' ? 2.3 : (mode === 'near' ? 3.6 : 4.8);
       var speedZoom = U.clamp(Math.abs(p.vLong) / 45, 0, 1) * 3.2;
       var tx, ty, tz, lx, ly, lz;
       if (look) {

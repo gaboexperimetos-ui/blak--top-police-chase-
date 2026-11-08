@@ -81,13 +81,13 @@
       });
       g.setLineDash([]);
       // Pasos de cebra
-      g.fillStyle = 'rgba(240,240,235,0.85)';
+      g.fillStyle = 'rgba(248,247,240,0.92)';
       for (var k = -HALF; k <= HALF; k++) {
         var cross = k * G;
-        for (var s = 0; s < 7; s++) {
-          var o = -roadHalf + 2 + s * 2.6;
-          if (axis === 'x') g.fillRect(toPx(cross - 4), toPx(pos + o) - toUnits(1) * 0.4, toUnits(1) * 2.5, toUnits(1) * 4.5);
-          else g.fillRect(toPx(pos + o) - toUnits(1) * 0.4, toPx(cross - 4), toUnits(1) * 4.5, toUnits(1) * 2.5);
+        for (var s = 0; s < 5; s++) {
+          var o = -roadHalf + 3 + s * 4.0;
+          if (axis === 'x') g.fillRect(toPx(cross - 5), toPx(pos + o) - toUnits(1) * 0.6, toUnits(1) * 4.0, toUnits(1) * 3.1);
+          else g.fillRect(toPx(pos + o) - toUnits(1) * 0.6, toPx(cross - 5), toUnits(1) * 3.1, toUnits(1) * 4.0);
         }
       }
     }
@@ -259,6 +259,37 @@
       if (roofMesh.instanceColor) roofMesh.instanceColor.needsUpdate = true;
       bodyMesh.castShadow = true; bodyMesh.receiveShadow = true;
       this.group.add(bodyMesh, facadeMesh, roofMesh);
+
+      /* Azoteas con maquinaria y marquesinas de planta baja: dos mallas
+         instanciadas para toda la ciudad (solo 2 draw calls extra) que
+         rompen la monotonia de los bloques y dan vida a la calle. */
+      var units = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, bodies.length * 2));
+      var awnings = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, bodies.length * 4));
+      var ui = 0, wi = 0, uc = new THREE.Color(), ac = new THREE.Color();
+      var awPalette = ['#c0563c', '#3f7fb0', '#d09a34', '#4a9b6c', '#8b5ea8', '#d8d2c4'];
+      bodies.forEach(function (bd, k) {
+        q.identity();
+        p.set(bd.x - bd.w * .18, bd.h + .75, bd.z - bd.d * .16); s.set(2.4, 1.1, 2.0);
+        mtx.compose(p, q, s); units.setMatrixAt(ui, mtx); uc.set('#8e8b80'); units.setColorAt(ui, uc); ui++;
+        p.set(bd.x + bd.w * .22, bd.h + .55, bd.z + bd.d * .18); s.set(1.6, .7, 1.5);
+        mtx.compose(p, q, s); units.setMatrixAt(ui, mtx); uc.set('#a9a398'); units.setColorAt(ui, uc); ui++;
+        [{ dx: 0, dz: bd.d / 2 + .45, sx: bd.w * .86, sz: .9 },
+         { dx: 0, dz: -bd.d / 2 - .45, sx: bd.w * .86, sz: .9 },
+         { dx: -bd.w / 2 - .45, dz: 0, sx: .9, sz: bd.d * .86 },
+         { dx: bd.w / 2 + .45, dz: 0, sx: .9, sz: bd.d * .86 }].forEach(function (sd, idx) {
+          p.set(bd.x + sd.dx, 2.7, bd.z + sd.dz); s.set(sd.sx, .22, sd.sz);
+          mtx.compose(p, q, s); awnings.setMatrixAt(wi, mtx);
+          ac.set(awPalette[(k * 3 + idx) % awPalette.length]); awnings.setColorAt(wi, ac); wi++;
+        });
+      });
+      units.count = ui; awnings.count = wi;
+      units.instanceMatrix.needsUpdate = true; awnings.instanceMatrix.needsUpdate = true;
+      if (units.instanceColor) units.instanceColor.needsUpdate = true;
+      if (awnings.instanceColor) awnings.instanceColor.needsUpdate = true;
+      units.castShadow = true;
+      this.group.add(units, awnings);
 
       // Árboles y farolas instanciados
       this.addInstancedProps(trees, lamps);
@@ -537,6 +568,22 @@
         return p;
       }
       return { x: 0, z: 0 };
+    },
+    /* Punto de calzada DELANTE del jugador, dentro de su cono de visión.
+       Evita que tráfico, patrullas y objetos aparezcan detrás o de golpe
+       en medio de la pantalla. */
+    roadPointAhead: function (pl, minD, maxD) {
+      if (!pl) return this.randomRoadPoint(Math.random, 0, 0, minD, maxD);
+      var fx = -Math.sin(pl.heading || 0), fz = -Math.cos(pl.heading || 0);
+      var best = null;
+      for (var t = 0; t < 48; t++) {
+        var p = this.randomRoadPoint(Math.random, pl.x, pl.z, minD, maxD);
+        var dx = p.x - pl.x, dz = p.z - pl.z, d = Math.hypot(dx, dz) || 1;
+        var dot = (dx * fx + dz * fz) / d;
+        if (dot > 0.35) return p;
+        if (!best || dot > best.dot) best = { p: p, dot: dot };
+      }
+      return best ? best.p : this.randomRoadPoint(Math.random, pl.x, pl.z, minD, maxD);
     },
     // BFS sobre la retícula: devuelve el primer paso desde (i,j) hacia (ti,tj).
     pathStep: function (i, j, ti, tj) {

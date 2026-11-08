@@ -223,11 +223,17 @@
   BTP.t = function (k, v) { return BTP.I18n.t(k, v); };
 
   /* --------------------------- Guardado local --------------------------- */
+  // El original deja elegir todos los coches y jugar en pantalla dividida
+  // desde el principio: sin grind ni paywalls para acceder al contenido.
+  var ALL_CARS = ['muscle', 'compact', 'sedan', 'taxi', 'van', 'pickup', 'sport',
+    'interceptor', 'supergt', 'armored', 'hyper', 'musclepro'];
+  var ALL_COLORS = ['#f57c1f', '#e8412f', '#f5c518', '#ff7fb0', '#8b46e8', '#2e6ee8',
+    '#25c9e8', '#2fae67', '#a6e34b', '#f2f2f2', '#22252c', '#c0c6cf'];
   function defaults() {
     return {
-      v: 1, cash: 0, totalEarned: 0, scoreBest: 0, missionsDone: 0, bestEndless: 0, bestTrial: 0,
-      selected: 'muscle', colors: { muscle: '#f57c1f' }, unlocked: ['muscle'], upgrades: {},
-      colorsUnlocked: ['#f57c1f', '#e8412f', '#f5c518'], splitscreen: false,
+      v: 2, cash: 0, totalEarned: 0, scoreBest: 0, missionsDone: 0, bestEndless: 0, bestTrial: 0,
+      selected: 'muscle', colors: { muscle: '#f57c1f' }, unlocked: ALL_CARS.slice(), upgrades: {},
+      colorsUnlocked: ALL_COLORS.slice(), splitscreen: true,
       settings: {
         master: 0.8, music: 0.45, sfx: 0.85, muted: false, quality: 'high', shadows: true,
         lang: 'es', fps: false, cam: 'far', mapZoom: 1, classic: true
@@ -252,6 +258,13 @@
         var raw = window.localStorage.getItem(BTP.C.SAVE_KEY);
         this.data = merge(defaults(), raw ? JSON.parse(raw) : {});
       } catch (e) { this.available = false; this.data = defaults(); }
+      // Migración: partidas guardadas antes de la v2 tenían coches y 2P
+      // bloqueados por dinero. Se conceden siempre para que el garaje y la
+      // pantalla dividida estén disponibles desde el primer arranque.
+      this.data.v = 2;
+      this.data.splitscreen = true;
+      this.data.unlocked = ALL_CARS.slice();
+      this.data.colorsUnlocked = ALL_COLORS.slice();
       return this.data;
     },
     flush: function () {
