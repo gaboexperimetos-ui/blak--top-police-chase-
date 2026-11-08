@@ -23,7 +23,7 @@
     var cv = document.createElement('canvas'); cv.width = cv.height = MAP_SIZE;
     var g = cv.getContext('2d');
     // Suelo base
-    g.fillStyle = '#7fa36a'; g.fillRect(0, 0, MAP_SIZE, MAP_SIZE);
+    g.fillStyle = '#6fbb4a'; g.fillRect(0, 0, MAP_SIZE, MAP_SIZE);
     // Zonas de manzanas (acera / hierba)
     for (var i = -HALF; i < HALF; i++) for (var j = -HALF; j < HALF; j++) {
       var x0 = i * G + RW / 2, x1 = (i + 1) * G - RW / 2;
@@ -31,8 +31,22 @@
       var park = isPark(i, j);
       var water = (i + 0.5) * G > C.WATER_X;
       if (water) continue;
-      g.fillStyle = park ? '#5d9a4e' : '#9a9ea3';
+      var grass = !park && ((i * 3 + j * 7 + 500) % 5 < 2);
+      g.fillStyle = park ? '#5d9a4e' : (grass ? '#6cbb48' : '#9a9ea3');
       g.fillRect(toPx(x0), toPx(z0), toUnits(1) * (x1 - x0), toUnits(1) * (z1 - z0));
+      if (grass) {
+        // Hierba a damero pixelado, como la franja verde del original.
+        var step = toUnits(1) * 9;
+        var gx0 = toPx(x0), gz0 = toPx(z0);
+        var gw = toUnits(1) * (x1 - x0), gh = toUnits(1) * (z1 - z0);
+        g.save(); g.beginPath(); g.rect(gx0, gz0, gw, gh); g.clip();
+        for (var gy = gz0; gy < gz0 + gh; gy += step) for (var gx = gx0; gx < gx0 + gw; gx += step) {
+          g.fillStyle = ((Math.floor(gx / step) + Math.floor(gy / step)) % 2)
+            ? 'rgba(255,255,255,.11)' : 'rgba(0,0,0,.09)';
+          g.fillRect(gx, gy, step, step);
+        }
+        g.restore();
+      }
       if (park) {
         g.strokeStyle = '#d9d2b4'; g.lineWidth = toUnits(1) * 3;
         g.beginPath(); g.moveTo(toPx(x0), toPx((z0 + z1) / 2)); g.lineTo(toPx(x1), toPx((z0 + z1) / 2)); g.stroke();
@@ -56,7 +70,7 @@
     function drawRoad(axis, pos) {
       var a = toPx(pos - roadHalf - SW), b = toPx(pos + roadHalf + SW);
       var len = toUnits(1) * (2 * (HALF * G + G * 0.5));
-      g.fillStyle = '#b4b7bb'; // aceras
+      g.fillStyle = '#9a9ea3'; // aceras
       if (axis === 'x') g.fillRect(a, toPx(-HALF * G - G * 0.5), b - a, len);
       else g.fillRect(toPx(-HALF * G - G * 0.5), a, len, b - a);
       g.fillStyle = '#313438'; // asfalto
@@ -71,8 +85,9 @@
         else { g.moveTo(toPx(-HALF * G - G * 0.5), toPx(pos + off)); g.lineTo(toPx(HALF * G + G * 0.5), toPx(pos + off)); }
         g.stroke();
       });
-      g.strokeStyle = '#f0c932'; g.lineWidth = toUnits(1) * 0.8;
-      g.setLineDash([toUnits(1) * 7, toUnits(1) * 7]);
+      // El original usa lineas BLANCAS discontinuas, no amarillas.
+      g.strokeStyle = '#f4f4ee'; g.lineWidth = toUnits(1) * 0.85;
+      g.setLineDash([toUnits(1) * 4.5, toUnits(1) * 9]);
       [-RW / 4, RW / 4].forEach(function (off) {
         g.beginPath();
         if (axis === 'x') { g.moveTo(toPx(pos + off), toPx(-HALF * G - G * 0.5)); g.lineTo(toPx(pos + off), toPx(HALF * G + G * 0.5)); }
@@ -98,7 +113,7 @@
     g.fillRect(toPx(C.WATER_X), toPx(RW / 2 + 7), toPx(EXT) - toPx(C.WATER_X), MAP_SIZE - toPx(RW / 2 + 7));
     g.fillStyle = '#454b52'; // tablero del puente
     g.fillRect(toPx(C.WATER_X), toPx(-RW / 2 - 3), toPx(EXT) - toPx(C.WATER_X), toUnits(1) * (RW + 6));
-    g.fillStyle = '#f0c932';
+    g.fillStyle = '#f4f4ee';
     g.fillRect(toPx(C.WATER_X), toPx(-0.5), toPx(EXT) - toPx(C.WATER_X), toUnits(1) * 1);
     // Huellas de edificios en el mapa (las dibuja buildBlocks)
     return { canvas: cv, ctx: g };
@@ -215,9 +230,11 @@
         }
         specs.forEach(function (sp, idx) {
           var h = 9 + Math.pow(rng(), 1.5) * 42 + ((i === 0 || j === 0) ? 8 : 0);
-          var color = palette[Math.floor(rng() * palette.length)];
-          bodies.push({ x: sp.x, z: sp.z, w: sp.w, d: sp.d, h: h, color: color });
-          facades.push({ x: sp.x, z: sp.z, w: sp.w, d: sp.d, h: h });
+          var glass = rng() < .18;
+          var style = glass ? 2 : (rng() < .45 ? 1 : 0);
+          var color = glass ? '#8fb6cf' : palette[Math.floor(rng() * palette.length)];
+          bodies.push({ x: sp.x, z: sp.z, w: sp.w, d: sp.d, h: h, color: color, glass: glass });
+          facades.push({ x: sp.x, z: sp.z, w: sp.w, d: sp.d, h: h, glass: glass, style: style });
           roofs.push({ x: sp.x, z: sp.z, w: sp.w, d: sp.d, h: h, color: color });
           selfAddBuilding.call(this, sp.x, sp.z, sp.w, sp.d, h);
           ctx.fillStyle = 'rgba(40,44,52,0.85)';
@@ -227,8 +244,8 @@
       // Instancias: cuerpos, fachadas, cornisas
       var bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
       var bodyMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), bodyMat, bodies.length);
-      var facadeMat = new THREE.MeshBasicMaterial({ map: M.facadeTexture(0), transparent: true, alphaTest: 0.25, side: THREE.DoubleSide });
-      var facadeMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), facadeMat, facades.length * 4);
+      var facadeGroups = [[], [], []];
+      facades.forEach(function (b) { facadeGroups[b.style].push(b); });
       var roofMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
         new THREE.MeshLambertMaterial({ color: 0xffffff }), roofs.length);
       var mtx = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3();
@@ -239,57 +256,71 @@
         p.set(b.x, b.h + 0.2, b.z); s.set(b.w + 0.7, 0.4, b.d + 0.7); mtx.compose(p, q, s);
         roofMesh.setMatrixAt(k, mtx); col.set(b.color).multiplyScalar(0.72); roofMesh.setColorAt(k, col);
       });
-      var f = 0;
-      facades.forEach(function (b) {
-        var sides = [
-          { dx: 0, dz: b.d / 2 + 0.04, ry: 0, sx: b.w * 0.94 },
-          { dx: 0, dz: -b.d / 2 - 0.04, ry: Math.PI, sx: b.w * 0.94 },
-          { dx: -b.w / 2 - 0.04, dz: 0, ry: -Math.PI / 2, sx: b.d * 0.94 },
-          { dx: b.w / 2 + 0.04, dz: 0, ry: Math.PI / 2, sx: b.d * 0.94 }
-        ];
-        sides.forEach(function (sd) {
-          q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), sd.ry);
-          p.set(b.x + sd.dx, b.h / 2, b.z + sd.dz); s.set(sd.sx, b.h * 0.94, 1);
-          mtx.compose(p, q, s); facadeMesh.setMatrixAt(f++, mtx);
+      var facadeMeshes = [];
+      facadeGroups.forEach(function (list, style) {
+        if (!list.length) return;
+        var fm = new THREE.MeshBasicMaterial({ map: M.facadeTexture(style),
+          transparent: true, alphaTest: 0.25, side: THREE.DoubleSide });
+        var im = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), fm, list.length * 4);
+        var idx = 0, tint = new THREE.Color('#ffffff');
+        list.forEach(function (b) {
+          var sides = [
+            { dx: 0, dz: b.d / 2 + 0.04, ry: 0, sx: b.w * 0.94 },
+            { dx: 0, dz: -b.d / 2 - 0.04, ry: Math.PI, sx: b.w * 0.94 },
+            { dx: -b.w / 2 - 0.04, dz: 0, ry: -Math.PI / 2, sx: b.d * 0.94 },
+            { dx: b.w / 2 + 0.04, dz: 0, ry: Math.PI / 2, sx: b.d * 0.94 }
+          ];
+          sides.forEach(function (sd) {
+            q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), sd.ry);
+            p.set(b.x + sd.dx, b.h / 2, b.z + sd.dz); s.set(sd.sx, b.h * 0.94, 1);
+            mtx.compose(p, q, s); im.setMatrixAt(idx++, mtx);
+          });
         });
+        im.count = idx; im.instanceMatrix.needsUpdate = true;
+        facadeMeshes.push(im);
       });
-      bodyMesh.instanceMatrix.needsUpdate = true; facadeMesh.instanceMatrix.needsUpdate = true;
+      bodyMesh.instanceMatrix.needsUpdate = true;
       roofMesh.instanceMatrix.needsUpdate = true;
       if (bodyMesh.instanceColor) bodyMesh.instanceColor.needsUpdate = true;
       if (roofMesh.instanceColor) roofMesh.instanceColor.needsUpdate = true;
       bodyMesh.castShadow = true; bodyMesh.receiveShadow = true;
-      this.group.add(bodyMesh, facadeMesh, roofMesh);
+      this.group.add(bodyMesh, roofMesh);
+      var cityGroup = this.group;
+      facadeMeshes.forEach(function (m) { cityGroup.add(m); });
 
       /* Azoteas con maquinaria y marquesinas de planta baja: dos mallas
          instanciadas para toda la ciudad (solo 2 draw calls extra) que
          rompen la monotonia de los bloques y dan vida a la calle. */
       var units = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
         new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, bodies.length * 2));
-      var awnings = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
-        new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, bodies.length * 4));
-      var ui = 0, wi = 0, uc = new THREE.Color(), ac = new THREE.Color();
-      var awPalette = ['#c0563c', '#3f7fb0', '#d09a34', '#4a9b6c', '#8b5ea8', '#d8d2c4'];
+      var units = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, bodies.length * 2));
+      var ui = 0, uc = new THREE.Color();
       bodies.forEach(function (bd, k) {
         q.identity();
         p.set(bd.x - bd.w * .18, bd.h + .75, bd.z - bd.d * .16); s.set(2.4, 1.1, 2.0);
         mtx.compose(p, q, s); units.setMatrixAt(ui, mtx); uc.set('#8e8b80'); units.setColorAt(ui, uc); ui++;
         p.set(bd.x + bd.w * .22, bd.h + .55, bd.z + bd.d * .18); s.set(1.6, .7, 1.5);
         mtx.compose(p, q, s); units.setMatrixAt(ui, mtx); uc.set('#a9a398'); units.setColorAt(ui, uc); ui++;
-        [{ dx: 0, dz: bd.d / 2 + .45, sx: bd.w * .86, sz: .9 },
-         { dx: 0, dz: -bd.d / 2 - .45, sx: bd.w * .86, sz: .9 },
-         { dx: -bd.w / 2 - .45, dz: 0, sx: .9, sz: bd.d * .86 },
-         { dx: bd.w / 2 + .45, dz: 0, sx: .9, sz: bd.d * .86 }].forEach(function (sd, idx) {
-          p.set(bd.x + sd.dx, 2.7, bd.z + sd.dz); s.set(sd.sx, .22, sd.sz);
-          mtx.compose(p, q, s); awnings.setMatrixAt(wi, mtx);
-          ac.set(awPalette[(k * 3 + idx) % awPalette.length]); awnings.setColorAt(wi, ac); wi++;
-        });
       });
-      units.count = ui; awnings.count = wi;
-      units.instanceMatrix.needsUpdate = true; awnings.instanceMatrix.needsUpdate = true;
+      units.count = ui;
+      units.instanceMatrix.needsUpdate = true;
       if (units.instanceColor) units.instanceColor.needsUpdate = true;
-      if (awnings.instanceColor) awnings.instanceColor.needsUpdate = true;
+      // Portales oscuros a pie de calle para dar profundidad a las fachadas.
+      var doors = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, bodies.length));
+      var di = 0, dc = new THREE.Color();
+      bodies.forEach(function (bd) {
+        q.identity();
+        p.set(bd.x, 1.45, bd.z + bd.d / 2 + .07);
+        s.set(Math.min(3.2, bd.w * .22), 2.9, .12);
+        mtx.compose(p, q, s); doors.setMatrixAt(di, mtx);
+        dc.set(bd.glass ? '#2b4a63' : '#58493c'); doors.setColorAt(di, dc); di++;
+      });
+      doors.count = di; doors.instanceMatrix.needsUpdate = true;
+      if (doors.instanceColor) doors.instanceColor.needsUpdate = true;
       units.castShadow = true;
-      this.group.add(units, awnings);
+      this.group.add(units, doors);
 
       // Árboles y farolas instanciados
       this.addInstancedProps(trees, lamps);
@@ -442,6 +473,11 @@
       }
       for (var n = -HALF; n < HALF; n += 3) {
         trees.push({ x: (n + 0.5) * G, z: -HALF * G - RW / 2 - 6, c: n % 4, s: 1.1 });
+      }
+      // Arboles en las aceras: la ciudad del original es muy verde.
+      for (var a = -HALF; a < HALF; a += 2) for (var bb = -HALF; bb < HALF; bb += 3) {
+        trees.push({ x: a * G + RW / 2 + 3.2, z: (bb + .5) * G, c: (a + bb + 20) % 4, s: .9 });
+        trees.push({ x: (bb + .5) * G, z: a * G + RW / 2 + 3.2, c: (a + bb + 21) % 4, s: .9 });
       }
       this.addInstancedProps(trees, lamps);
     },

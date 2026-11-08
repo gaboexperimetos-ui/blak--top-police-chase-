@@ -48,7 +48,7 @@
       this.trail = [];
       for (var i = 0; i < 12; i++) {
         var a = M.makeArrow(true);
-        a.scale.setScalar(this.classic ? 1.35 : 0.85);
+        a.scale.setScalar(this.classic ? 2.9 : 0.9);
         city.group.add(a);
         this.trail.push(a);
       }

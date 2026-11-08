@@ -481,7 +481,9 @@
       $('distance').textContent = dist + ' m';
       $('money').textContent = U.fmt(Save.data.cash);
       $('score').textContent = U.fmt(ms.hud.score || 0);
-      $('speed').textContent = Math.round(p.getSpeedKmh());
+      var kmh = Math.round(p.getSpeedKmh());
+      $('speed').textContent = Save.data.settings.classic
+        ? ('00' + Math.min(999, kmh)).slice(-3) : kmh;
       $('multi').textContent = (ms.multiplier > 1 ? 'x' + ms.multiplier + ' ' + BTP.t('hud.mult') : '');
       var timer = $('timer');
       if (ms.hud.timer > 0) { timer.classList.remove('hidden'); timer.textContent = U.time(ms.hud.timer); }

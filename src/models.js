@@ -39,9 +39,12 @@
     return t;
   };
 
+  /* Tres estilos de fachada: rejilla, piedra con arcos y torre de cristal.
+     El original mezcla los tres tipos en la misma calle. */
   M.facadeTexture = function (variant) {
     var key = 'facade' + variant;
     if (cache[key]) return cache[key];
+    var style = variant % 3;
     var palettes = [
       ['#20304a', '#8fd8ff'], ['#2b2a33', '#ffd98c'], ['#26343a', '#b9f0e0'],
       ['#3a3040', '#ffb4c8'], ['#2d3b33', '#e8ffb0']
@@ -49,17 +52,36 @@
     var p = palettes[variant % palettes.length];
     var t = M.canvasTexture(128, 256, function (g, w, h) {
       g.clearRect(0, 0, w, h);
-      var cols = 4, rows = 8, pad = 10;
-      var cw = (w - pad * (cols + 1)) / cols, ch = (h - pad * (rows + 1)) / rows;
       var rnd = U.mulberry32(100 + variant * 37);
-      for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
-        var lit = rnd() > 0.55;
-        g.fillStyle = lit ? p[1] : p[0];
-        g.globalAlpha = lit ? 0.85 : 0.95;
-        g.fillRect(pad + c * (cw + pad), pad + r * (ch + pad), cw, ch);
-        g.globalAlpha = 1;
-        g.fillStyle = 'rgba(255,255,255,0.14)';
-        g.fillRect(pad + c * (cw + pad), pad + r * (ch + pad), cw, 2);
+      if (style === 2) {
+        g.fillStyle = '#2a5f8c'; g.fillRect(0, 0, w, h);
+        for (var y = 0; y < h; y += 16) {
+          g.fillStyle = rnd() > .5 ? '#6fb6e8' : '#8fd0f2';
+          g.fillRect(2, y + 2, w - 4, 10);
+          g.fillStyle = 'rgba(255,255,255,.28)'; g.fillRect(2, y + 2, w - 4, 2);
+        }
+      } else if (style === 1) {
+        g.fillStyle = '#d8cdb6'; g.fillRect(0, 0, w, h);
+        for (var r2 = 0; r2 < 6; r2++) for (var c2 = 0; c2 < 4; c2++) {
+          var x = 8 + c2 * 31, yy = 12 + r2 * 40;
+          g.fillStyle = rnd() > .55 ? '#3a4a5a' : '#243746';
+          g.fillRect(x, yy, 18, 26);
+          g.beginPath(); g.arc(x + 9, yy, 9, Math.PI, 0); g.fill();
+          g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 2;
+          g.strokeRect(x, yy, 18, 26);
+        }
+      } else {
+        var cols = 4, rows = 8, pad = 10;
+        var cw = (w - pad * (cols + 1)) / cols, ch = (h - pad * (rows + 1)) / rows;
+        for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+          var lit = rnd() > 0.55;
+          g.fillStyle = lit ? p[1] : p[0];
+          g.globalAlpha = lit ? 0.85 : 0.95;
+          g.fillRect(pad + c * (cw + pad), pad + r * (ch + pad), cw, ch);
+          g.globalAlpha = 1;
+          g.fillStyle = 'rgba(255,255,255,0.14)';
+          g.fillRect(pad + c * (cw + pad), pad + r * (ch + pad), cw, 2);
+        }
       }
     });
     cache[key] = t; return t;
@@ -239,6 +261,8 @@
     if (detail) {
       box(w * .80, .14, .14, dark, 0, .74, nose - .11, g);   // parrilla
       box(w * 1.02, .14, .16, dark, 0, .42, nose - .20, g);  // defensa baja
+      box(w * 1.08, .17, .18, dark, 0, .60, nose - .24, g);  // bull bar
+      box(.12, .52, .12, dark, 0, .62, nose - .28, g);
     }
 
     /* Cristales: parabrisas, luneta y ventanillas (posición por silueta). */
@@ -293,7 +317,8 @@
 
     /* ---------------- Detalles exclusivos de cada vehículo ---------------- */
     if (shape === 'muscle') {
-      box(.72, .18, .62, dark, 0, 1.09, -1.72, g);                 // toma de aire
+      box(w * .44, .05, 1.05, shared('goldHood', '#ffb52e'), 0, 1.10, -1.72, g); // capó dorado
+      box(.72, .18, .62, dark, 0, 1.16, -1.72, g);                 // toma de aire
       [-.32, .32].forEach(function (x) { box(.18, .03, 1.25, basic('#ffffff'), x, 1.04, -1.68, g); });
       box(w * .78, .08, .30, dark, 0, 1.08, tail - .22, g);        // alerón trasero
       if (detail) [-1, 1].forEach(function (s) {
@@ -346,9 +371,14 @@
       });
     }
     if (police) {
+      // Portada oficial: carrocería negra, capó y techo naranja, escudo
+      // circular blanco en la puerta y parachoques claro.
       var white = shared('policeWhite', '#f4f5f7');
+      var orange = shared('policeOrange', '#f5931f');
+      box(w * .86, .06, 1.6, orange, 0, 1.04, -1.62, g);
+      box(w * .76, .06, 2.0, orange, 0, roofY + .05, .02, g);
       [-1, 1].forEach(function (s) {
-        box(.06, .92, 1.5, white, s * (w / 2 + .005), 1.02, .05, g);
+        box(.06, .10, 1.6, white, s * (w / 2 + .008), .96, .05, g);
         var badge = new THREE.Mesh(new THREE.CircleGeometry(.34, 12), basic('#e9eef5'));
         badge.position.set(s * (w / 2 + .045), 1.12, .05);
         badge.rotation.y = s * Math.PI / 2; g.add(badge);
@@ -356,12 +386,11 @@
         dot.position.set(s * (w / 2 + .05), 1.12, .05);
         dot.rotation.y = s * Math.PI / 2; g.add(dot);
       });
-      box(w + .02, .22, .9, dark, 0, .72, .05, g);
-      box(w * 1.04, .24, .18, chrome, 0, .64, nose - .16, g);              // defensa reforzada
+      box(w * 1.04, .24, .18, white, 0, .64, nose - .16, g);               // parachoques claro
       [-1, 1].forEach(function (s) { box(.12, .38, .12, dark, s * w * .40, .84, nose - .12, g); });
       box(.16, .16, 1.0, dark, 0, roofY + .06, .02, g);
-      var red = box(.22, .18, .44, basic('#ff2020'), -.32, roofY + .08, .02, g);
-      var blue = box(.22, .18, .44, basic('#2050ff'), .32, roofY + .08, .02, g);
+      var red = box(.22, .18, .44, basic('#ff2020'), -.32, roofY + .16, .02, g);
+      var blue = box(.22, .18, .44, basic('#2050ff'), .32, roofY + .16, .02, g);
       var siren = [red, blue];
     } else { var siren = []; }
 
@@ -641,7 +670,7 @@
   M.makeArrow = function (flat) {
     var g = new THREE.Group();
     var geo = new THREE.ShapeGeometry(arrowShape());
-    var m = basic('#38ff46', { side: THREE.DoubleSide, transparent: true, opacity: 0.98, depthWrite: false });
+    var m = basic('#4bff50', { side: THREE.DoubleSide, transparent: true, opacity: 0.98, depthWrite: false });
     var a = new THREE.Mesh(geo, m);
     if (flat) { a.rotation.x = -Math.PI / 2; a.position.y = 0.12; }
     else a.position.y = 2.2;
@@ -654,7 +683,7 @@
     color = color || '#42f55a';
     var g = new THREE.Group();
     var beam = new THREE.Mesh(new THREE.CylinderGeometry(3.0, 3.0, 26, 16, 1, true),
-      basic(color, { transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false }));
+      basic(color, { transparent: true, opacity: 0.24, side: THREE.DoubleSide, depthWrite: false }));
     beam.position.y = 13; g.add(beam);
     var ring = new THREE.Mesh(new THREE.TorusGeometry(3.2, 0.28, 6, 24), basic(color, { transparent: true, opacity: 0.9 }));
     ring.rotation.x = Math.PI / 2; ring.position.y = 0.25; g.add(ring);

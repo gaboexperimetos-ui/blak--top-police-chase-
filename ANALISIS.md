@@ -171,8 +171,8 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 
 ## 10. Verificación realizada
 
-- `npm test` → **93 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
-- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 5 con bloqueos/pinchos/helicóptero, garaje con 12 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v3 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
+- `npm test` → **99 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
+- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 5 con bloqueos/pinchos/helicóptero, garaje con 12 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v6 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
 
 ---
 
@@ -192,4 +192,19 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 
 Tras la primera entrega se detectó que el aspecto era demasiado genérico: un único modelo de caja para todos los vehículos, spawns aleatorios por distancia y contenido bloqueado tras pagos. La revisión actual añade 11 perfiles de carrocería con cabinas, cristales, guardabarros, luces y detalles por tipo; tráfico con autobuses, camiones, taxis, furgonetas y pickups; `City.roadPointAhead()` para generar tráfico, policía y monedas dentro del cono de visión; aparición gradual (`beginSpawn`/`fadeSpawn`) y control de solapes (`farFrom`); azoteas, marquesinas, luz de relleno, sombra de contacto y cámara más cercana. Los 12 coches, las 12 pinturas y la pantalla dividida se conceden al arrancar, incluida la migración de partidas guardadas con la versión anterior.
 
-**Límite sin resolver**: sigue sin ser una copia bit a bit. Para igualar el original hacen falta sus capturas de referencia o sus assets con licencia; el análisis de esta sección se construyó a partir de descripciones textuales de fuentes públicas.
+**Referencia visual añadida**: el usuario aportó una captura de partida y la portada oficial. Con ellas se calibraron cámara, HUD, asfalto, hierba, fachadas y librea de los coches (§10.2). Las imágenes se usaron solo como referencia de comparación y **no se incorporaron al juego**.
+
+**Límite sin resolver**: sigue sin ser una copia bit a bit. Faltan los modelos 3D, texturas y audio originales con licencia; las fuentes públicas y las dos capturas permiten aproximar el aspecto, no reproducir los assets.
+
+### 10.2 Calibración contra capturas reales
+
+| Elemento | Captura del original | Ajuste aplicado |
+| --- | --- | --- |
+| Cámara | Alta, se ve el techo del coche y mucha ciudad | `dist 13.0`, `altura 9.5`, cielo degradado |
+| Asfalto | Líneas discontinuas **blancas** | `#f4f4ee` con dash corto; se eliminó el amarillo |
+| Hierba | Verde saturado con textura a damero | Damero en canvas sobre manzanas verdes |
+| Edificios | Piedra con arcos, torre de cristal, ladrillo | 3 estilos de `facadeTexture` + portales + azoteas |
+| HUD | Contorno oscuro, barras huecas, `Money:` verde | CSS `.hud.classic` reescrito, `000 KM/H`, sin subtítulo |
+| Coche `01` | Naranja, capó dorado, defensas, faros amarillos | Capó dorado, bull bar, faros `#ffe14d`, número `01` |
+| Patrulla | Negra con capó/techo naranja, escudo y sirena | Librea negra + naranja, escudo blanco, barra rojo/azul |
+| Flechas | Verdes grandes sobre la calzada | Escala `2.9` y haz del objetivo más visible |

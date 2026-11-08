@@ -126,7 +126,7 @@ section('4. Variedad de vehículos, arte y spawns');
 if (BTP) {
   const src = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
   const models = src('src/models.js'), ai = src('src/ai.js');
-  const city = src('src/city.js'), game = src('src/game.js');
+  const city = src('src/city.js'), game = src('src/game.js'), css = src('styles.css');
   ['muscle', 'sedan', 'hatch', 'sport', 'super', 'hyper', 'police', 'van', 'pickup', 'truck', 'bus']
     .forEach(sh => ok('silueta 3D propia: ' + sh, new RegExp('\\b' + sh + ':').test(models)));
   ok('guardabarros y cristales por silueta', models.includes('TorusGeometry') && models.includes('var CAB'));
@@ -135,8 +135,15 @@ if (BTP) {
   ok('spawns sin amontonamiento', ai.includes('farFrom'));
   ok('tráfico con autobuses, camiones y taxis',
     /shape: 'bus'/.test(ai) && /shape: 'truck'/.test(ai) && /taxi: true/.test(ai));
-  ok('ciudad con azoteas y marquesinas', city.includes('awnings') && city.includes('units'));
-  ok('luz de relleno y cámara más cercana', game.includes('fill') && game.includes('9.6'));
+  ok('ciudad con azoteas, portales y 3 estilos de fachada', city.includes('units') && city.includes('doors') && city.includes('facadeGroups'));
+  ok('luz de relleno y cielo degradado', game.includes('fill') && game.includes('skyTex'));
+  ok('cámara alta como la captura original', /13\.0/.test(game) && /9\.5/.test(game));
+  ok('líneas de calle blancas (no amarillas)', city.includes("'#f4f4ee'") && city.includes('setLineDash'));
+  ok('hierba a damero, torres de cristal y portales', city.includes('grass') && city.includes('facadeGroups') && city.includes('doors'));
+  ok('HUD clásico calibrado (Money verde, contornos)', css.includes("content: 'Money:'") && css.includes('Georgia'));
+  ok('patrulla negra con capó naranja y muscle con capó dorado',
+    models.includes('policeOrange') && models.includes('goldHood'));
+  ok('flechas verdes grandes y haz del objetivo', src('src/missions.js').includes('2.9') && models.includes('opacity: 0.24'));
 }
 
 section('5. Garantía OFFLINE (cero peticiones externas)');

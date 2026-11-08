@@ -271,25 +271,54 @@ kbd { display: inline-block; padding: 1px 6px; background: #23354a; border: 1px 
 .record { text-align: center; color: var(--green); font-family: var(--font); letter-spacing: 2px; }
 
 /* ======================= MODO ORIGINAL (POKI) ========================== */
+/* Calibrado contra la captura real del juego: rótulos con contorno oscuro,
+   barras huecas de borde blanco, "Money:" en verde y botones rojos. */
 .classic-badge { display: inline-block; margin-left: 6px; padding: 5px 12px; border: 1px solid var(--gold);
   color: var(--gold); border-radius: 20px; font-size: 11px; letter-spacing: 1px; }
-#hud.classic .money::before { content: 'Money:'; font-family: var(--font); font-size: 14px; margin-right: 6px; }
+#hud.classic .meter-label {
+  background: none; padding: 0 0 2px; color: #fff;
+  font-family: Georgia, 'Times New Roman', serif; font-style: italic;
+  font-size: 19px; font-weight: 700; letter-spacing: 0;
+  text-shadow: -2px -2px 0 #14202c, 2px -2px 0 #14202c, -2px 2px 0 #14202c,
+               2px 2px 0 #14202c, 0 3px 7px rgba(0,0,0,.85);
+}
+#hud.classic .bar { background: rgba(255,255,255,.05); border: 2px solid #fff;
+  border-radius: 8px; height: 17px; box-shadow: 0 2px 8px rgba(0,0,0,.55); }
+#hud.classic .bar i { background: linear-gradient(90deg, #ffc247, #ff5a1e); }
+#hud.classic .bar.police i { background: linear-gradient(90deg, #ffc247, #ff3b1e); }
+#hud.classic .hud-tl { width: 165px; }
+#hud.classic .banner { background: #141d2b; border: 2px solid rgba(255,255,255,.30);
+  border-radius: 10px; padding: 6px 22px 6px 8px; }
+#hud.classic .banner-text b { font-family: Georgia, 'Times New Roman', serif;
+  font-size: 20px; font-weight: 700; }
+#hud.classic .banner-text small { display: none; }
+#hud.classic .green-arrow { background: #2fe04a; border-radius: 5px; width: 40px; height: 40px; }
+#hud.classic .money { color: #fff; font-size: 20px; }
+#hud.classic .money::before { content: 'Money:'; color: #57e05a;
+  font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-weight: 700;
+  font-size: 21px; margin-right: 8px;
+  text-shadow: -2px -2px 0 #14202c, 2px -2px 0 #14202c, -2px 2px 0 #14202c,
+               2px 2px 0 #14202c, 0 3px 6px rgba(0,0,0,.8); }
+#hud.classic .hud-buttons { flex-direction: column; align-items: flex-end; gap: 5px; }
+#hud.classic #btn-map { order: -1; background: rgba(230,45,40,.95); }
+#hud.classic #btn-fullscreen { display: none; }
+#hud.classic #btn-pause { width: auto; min-width: 62px; padding: 0 12px; height: 32px;
+  font-family: Georgia, 'Times New Roman', serif; font-weight: 700; font-size: 15px;
+  letter-spacing: 0; background: rgba(230,45,40,.95);
+  border: 2px solid rgba(255,255,255,.75); }
 #hud.classic .score [data-i18n] { display: none; }
-#hud.classic .score::before { content: 'Score:'; font-family: var(--font); margin-right: 5px; }
-#hud.classic .score { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 15px; }
+#hud.classic .score::before { content: 'Score:'; font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px; margin-right: 6px; }
+#hud.classic .score { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 15px; }
 #hud.classic .score b { font-size: 19px; }
-#hud.classic #btn-pause { width: auto; padding: 0 12px; font-size: 12px; letter-spacing: 1px; }
-#hud.classic .icon-btn:nth-child(2), #hud.classic .icon-btn:nth-child(3) { display: none; }
 #hud.classic #minimap-wrap, #hud.classic #wanted, #hud.classic #heat-label,
 #hud.classic .nitro-meter, #hud.classic #challenge, #hud.classic #distance,
 #hud.classic #timer, #hud.classic #multi, #hud.classic #fps, #hud.classic .p2-stats { display: none !important; }
-#hud.classic .hud-bc { bottom: 46px; }
+#hud.classic .hud-bc { bottom: 48px; }
 #hud.classic .speed-ring { background: none; box-shadow: none; padding: 0; width: auto; height: auto; border-radius: 0; }
-#hud.classic .speed-inner { background: none; border: none; flex-direction: row; gap: 6px; align-items: baseline; }
-#hud.classic .speed-inner b { font-size: 30px; }
-#hud.classic .speed-inner small { font-size: 10px; }
-#hud.classic .hud-tl { width: 200px; }
-#hud.classic .banner { background: rgba(9, 16, 26, .92); }
+#hud.classic .speed-inner { background: none; border: none; flex-direction: row; gap: 5px; align-items: baseline; }
+#hud.classic .speed-inner b { font-size: 32px; }
+#hud.classic .speed-inner small { font-size: 10px; color: #fff; }
 
 /* ---------------------------- RESPONSIVE -------------------------------- */
 @media (max-width: 720px) {

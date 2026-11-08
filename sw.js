@@ -1,6 +1,6 @@
 /* Service Worker: cachea TODOS los archivos para jugar sin conexión tras la primera carga. */
 'use strict';
-const CACHE = 'btp-offline-v3';
+const CACHE = 'btp-offline-v6';
 const ASSETS = [
   './', './index.html', './styles.css', './sw.js',
   './vendor/three.min.js', './vendor/THREE-LICENSE.txt',

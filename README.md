@@ -1,6 +1,6 @@
 # BLACKTOP: POLICE CHASE — clon jugable 100% OFFLINE
 
-Recreación completa y **original** del juego de Poki *Blacktop: Police Chase* (Steelpan Interactive), hecha para jugar **sin wifi**: ciudad 3D low-poly, atracos, persecución policial de 6 niveles, **11 siluetas de vehículo distintas**, garaje con 12 coches y 12 pinturas (todo disponible desde el inicio), monedas, mejoras, minimapa, modos de juego, sonido procedural y pantalla dividida para 2 jugadores.
+Recreación completa y **original** del juego de Poki *Blacktop: Police Chase* (Steelpan Interactive), hecha para jugar **sin wifi**: ciudad 3D low-poly, atracos, persecución policial de 6 niveles, **11 siluetas de vehículo distintas** y arte calibrado con capturas reales, garaje con 12 coches y 12 pinturas (todo disponible desde el inicio), monedas, mejoras, minimapa, modos de juego, sonido procedural y pantalla dividida para 2 jugadores.
 
 > Todo el código, los modelos 3D, las texturas, los sonidos y la música están **dentro de esta carpeta**. No hay CDN, ni `npm install`, ni peticiones de red: `npm test` verifica que `index.html` no contiene ni una sola URL externa.
 
@@ -92,7 +92,7 @@ src/garage.js         12 coches, 12 pinturas, mejoras y desbloqueos
 src/missions.js       misiones, modos, monedas, combos y resultados
 src/ui.js             HUD, minimapa, menús, garaje y controles táctiles
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        93 comprobaciones sin navegador (npm test)
+tests/smoke.js        99 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -101,10 +101,10 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 93 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
+npm test    # 99 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
 ```
 
-También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 12 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v3 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
+También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 12 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v6 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
 
 ---
 
@@ -133,3 +133,16 @@ Esta pasada rehízo el apartado visual y corrigió los problemas señalados:
 ### Para acercarlo al original de verdad
 
 Lo que aquí hay es una reconstrucción hecha a partir de **texto**, no una copia literal. Si quieres que calque el juego real, adjunta al chat **capturas del original** (partida con el coche visto desde atrás, HUD en persecución, garaje y portada) o los assets originales con licencia. Con imágenes de referencia puedo comparar y ajustar coche, cámara, colores y HUD uno por uno.
+
+---
+
+## Referencia visual (aportada por el usuario)
+
+Se usaron **dos imágenes reales del juego** como referencia de calibración (no se copiaron dentro del juego ni se incluyen en el repo):
+
+- Captura de partida de `gogamego.io` → HUD, cámara, ciudad y flecha verde.
+- Portada de `minigamesville.com` → coche naranja `01` con defensas y faros amarillos, y patrulla negra con techo/capó naranja y sirena rojo/azul.
+
+Con ellas se ajustó: **cámara más alta y alejada** (se ve el techo del coche y más ciudad), **líneas de calle blancas** en vez de amarillas, **hierba verde a damero**, **cielo degradado**, **tres estilos de fachada** (rejilla, piedra con arcos y torre de cristal), portales y azoteas, **HUD con contorno** (`Damage`/`Police` en serif itálica, barras huecas de borde blanco, `Money:` verde, botón rojo de rejilla sobre `Pause`, velocímetro `000`), **subtítulo del cartel oculto**, **flechas verdes más grandes**, **patrulla negra con capó/techo naranja** y **capó dorado del muscle**.
+
+Todo sigue siendo geometría y texturas generadas por código: las imágenes solo sirvieron para comparar, no son assets del juego. Para una copia literal harían falta los modelos 3D y texturas originales con licencia.

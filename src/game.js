@@ -21,13 +21,13 @@
       var renderer = this.renderer = new THREE.WebGLRenderer({
         canvas: canvas, antialias: true, powerPreference: 'high-performance', alpha: false
       });
-      renderer.setClearColor(0x8ec8ea, 1);
+      renderer.setClearColor(0x9fd4ee, 1);
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
 
       var scene = this.scene = new THREE.Scene();
-      scene.background = new THREE.Color('#8ec8ea');
-      scene.fog = new THREE.Fog('#8ec8ea', 210, 690);
+      scene.background = new THREE.Color('#9fd4ee');
+      scene.fog = new THREE.Fog('#bfe2f2', 240, 760);
 
       var hemi = new THREE.HemisphereLight(0xd9ecff, 0x60745c, 0.78); scene.add(hemi);
       // Luz de relleno fría: da volumen a las fachadas y evita el aspecto plano.
@@ -42,9 +42,16 @@
       sun.shadow.camera.near = 1; sun.shadow.camera.far = 700;
       sun.shadow.bias = -0.0007;
       scene.add(sun); scene.add(sun.target);
-      // Cielo: cúpula degradada low-poly
+      // Cielo degradado: azul intenso arriba, casi blanco en el horizonte,
+      // como en la captura del juego original.
+      var skyTex = BTP.Models.canvasTexture(16, 256, function (g, w, h) {
+        var grad = g.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, '#3e9ed8'); grad.addColorStop(.55, '#9ed4ee');
+        grad.addColorStop(1, '#e8f5f8');
+        g.fillStyle = grad; g.fillRect(0, 0, w, h);
+      });
       var sky = new THREE.Mesh(new THREE.SphereGeometry(900, 16, 10),
-        new THREE.MeshBasicMaterial({ color: '#8ec8ea', side: THREE.BackSide, fog: false }));
+        new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, fog: false }));
       scene.add(sky);
       this.sky = sky;
 
@@ -312,8 +319,8 @@
       var fx = -Math.sin(p.heading), fz = -Math.cos(p.heading);
       var ctrl = this._controls && this._controls[i];
       var look = !!(ctrl && ctrl.look);
-      var dist = mode === 'hood' ? 1.2 : (mode === 'near' ? 7.0 : 9.6);
-      var height = mode === 'hood' ? 2.3 : (mode === 'near' ? 3.6 : 4.8);
+      var dist = mode === 'hood' ? 1.2 : (mode === 'near' ? 9.5 : 13.0);
+      var height = mode === 'hood' ? 2.3 : (mode === 'near' ? 7.0 : 9.5);
       var speedZoom = U.clamp(Math.abs(p.vLong) / 45, 0, 1) * 3.2;
       var tx, ty, tz, lx, ly, lz;
       if (look) {
