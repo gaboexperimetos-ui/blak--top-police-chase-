@@ -145,7 +145,11 @@
   };
 
   /* ============================== POLICÍA ================================ */
-  var LEVEL_THRESHOLDS = [0, 14, 34, 60, 92, 132];
+  /* El original tiene 6 niveles de persecución (Build.data / análisis del
+   * bundle). El índice 0 es "sin policía"; los índices 1..6 son los seis
+   * niveles, por eso hacen falta 7 umbrales para que C.MAX_WANTED = 6 sea
+   * alcanzable de verdad (antes sólo se llegaba al nivel 5). */
+  var LEVEL_THRESHOLDS = [0, 12, 28, 50, 78, 112, 155];
 
   function Police(city) {
     this.city = city;

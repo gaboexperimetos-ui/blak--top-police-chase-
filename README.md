@@ -1,6 +1,6 @@
 # BLACKTOP: POLICE CHASE — clon jugable 100% OFFLINE
 
-Recreación completa y **original** del juego de Poki *Blacktop: Police Chase* (Steelpan Interactive), hecha para jugar **sin wifi**: ciudad 3D low-poly, atracos, persecución policial de 6 niveles, **11 siluetas de vehículo distintas** y arte calibrado con capturas reales, garaje con 12 coches y 12 pinturas (todo disponible desde el inicio), monedas, mejoras, minimapa, modos de juego, sonido procedural y pantalla dividida para 2 jugadores.
+Recreación completa y **original** del juego de Poki *Blacktop: Police Chase* (Steelpan Interactive), hecha para jugar **sin wifi**: ciudad 3D low-poly, atracos, persecución policial de 6 niveles, **11 siluetas de vehículo distintas** y arte calibrado con capturas reales, garaje con 21 coches y 12 pinturas (todo disponible desde el inicio), monedas, mejoras, minimapa, modos de juego, sonido procedural y pantalla dividida para 2 jugadores.
 
 > Todo el código, los modelos 3D, las texturas, los sonidos y la música están **dentro de esta carpeta**. No hay CDN, ni `npm install`, ni peticiones de red: `npm test` verifica que `index.html` no contiene ni una sola URL externa.
 
@@ -65,7 +65,7 @@ Se puede desactivar en **Ajustes → MODO ORIGINAL (POKI)**: al desactivarlo vue
 - **Daño acumulado:** cada choque resta salud; humo, chispas, destello rojo y destrucción del coche = fin de partida. Reparación de pago en el garaje.
 - **Ciudad abierta:** 13×13 calles, 310+ edificios con fachadas, callejones, parques con árboles y estanques, semáforos, farolas, muelles con contenedores y barcos, puente sobre el agua, monorraíl elevado con tren en movimiento, tráfico civil con IA y atajos por la retícula de calles.
 - **Física arcade:** aceleración, freno, marcha atrás, derrape con freno de mano, nitro, peso, agarre, colisiones con edificios, tráfico y policía, pinchos, escudo, humo, marcas de derrape y chispas.
-- **Garaje:** 12 coches con estadísticas de velocidad / agarre / peso / salud y **11 siluetas 3D propias** (muscle, sedán, compacto, deportivo, super, hyper, patrulla, furgoneta, pickup, blindado y autobús de tráfico), 12 pinturas, 4 líneas de mejoras × 5 niveles y reparación. Todo el catálogo y el modo 2 jugadores están accesibles desde el inicio; el progreso se guarda en `localStorage`.
+- **Garaje:** 21 coches con estadísticas de velocidad / agarre / peso / salud y **11 siluetas 3D propias** (muscle, sedán, compacto, deportivo, super, hyper, patrulla, furgoneta, pickup, blindado y autobús de tráfico), 12 pinturas, 4 líneas de mejoras × 5 niveles y reparación. Todo el catálogo y el modo 2 jugadores están accesibles desde el inicio; el progreso se guarda en `localStorage`.
 - **Modos:** Misiones, Huida infinita, Contrarreloj (10 puntos de control), Desafíos (adelantamientos, monedas, derrape) y 2 jugadores.
 - **Economía y puntuación:** monedas `$` por la ciudad, botín, multiplicadores por combo, adelantamientos peligrosos, derrapes y récords persistentes.
 - **HUD completo:** daño, policía, nivel de persecución, dinero, puntos, velocímetro, nitro, temporizador, distancia al objetivo, minimapa a pantalla completa, avisos y FPS opcional.
@@ -88,11 +88,11 @@ src/models.js         TODOS los modelos 3D low-poly + texturas canvas + partícu
 src/city.js           generación de la ciudad, colisiones, retícula y minimapa
 src/physics.js        física del coche, daño, derrape y colisiones dinámicas
 src/ai.js             tráfico civil + policía, bloqueos, pinchos y helicóptero
-src/garage.js         12 coches, 12 pinturas, mejoras y desbloqueos
+src/garage.js         21 coches, 12 pinturas, mejoras y desbloqueos
 src/missions.js       misiones, modos, monedas, combos y resultados
 src/ui.js             HUD, minimapa, menús, garaje y controles táctiles
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        99 comprobaciones sin navegador (npm test)
+tests/smoke.js        103 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -101,10 +101,10 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 99 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
+npm test    # 103 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
 ```
 
-También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 12 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v6 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
+También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v7 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
 
 ---
 
@@ -146,3 +146,36 @@ Se usaron **dos imágenes reales del juego** como referencia de calibración (no
 Con ellas se ajustó: **cámara más alta y alejada** (se ve el techo del coche y más ciudad), **líneas de calle blancas** en vez de amarillas, **hierba verde a damero**, **cielo degradado**, **tres estilos de fachada** (rejilla, piedra con arcos y torre de cristal), portales y azoteas, **HUD con contorno** (`Damage`/`Police` en serif itálica, barras huecas de borde blanco, `Money:` verde, botón rojo de rejilla sobre `Pause`, velocímetro `000`), **subtítulo del cartel oculto**, **flechas verdes más grandes**, **patrulla negra con capó/techo naranja** y **capó dorado del muscle**.
 
 Todo sigue siendo geometría y texturas generadas por código: las imágenes solo sirvieron para comparar, no son assets del juego. Para una copia literal harían falta los modelos 3D y texturas originales con licencia.
+
+---
+
+## Información del bundle original (adelanto de OpenCode)
+
+El 2026-11-09 se recibió un **adelanto documental** con el análisis del
+`Build.data` de Unity WebGL del juego real: motor `Unity 2023.2.20f1`,
+resolución `960×600`, **21 vehículos base** (357 `.obj` con variantes), 78
+texturas `.png`, 77 materiales `.json`, guardado `Blacktop1_Save`, 6 niveles de
+persecución y el desglose del mapa (City Road, Alley, Dock, Ground Tiles,
+`Building 1..98`, monorraíl, rampas, setos, fuente).
+
+El documento completo está en
+[`blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-INFO.md`](blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-INFO.md).
+**Solo contiene nombres y metadatos**: ningún modelo, textura, material ni audio
+del original se ha copiado en este repo.
+
+Con ese dato se corrigieron dos cosas reales del clon:
+
+- **Los 6 niveles de persecución ahora se alcanzan.** Antes `LEVEL_THRESHOLDS`
+  tenía 6 entradas y el nivel máximo real era 5 pese a `MAX_WANTED = 6`. Ahora
+  son 7 umbrales: estado 0 sin policía + niveles 1…6.
+- **El garaje pasó de 12 a 21 coches**, con los nombres reales del bundle
+  (Acheron Redhawk, Carolina Corsair, Nakazato Cricket, McCall Monaco,
+  Bulldozer…), todos desbloqueados desde el inicio como antes. Las carrocerías
+  siguen siendo las 11 siluetas procedurales de `src/models.js`.
+
+⚠️ **Límite legal y técnico**: el repo es **público** y los assets de Steelpan
+Interactive / Poki tienen derechos de autor. No se deben subir aquí los `.obj`,
+`.png`, `.json` ni el bundle extraído sin licencia; el propio informe recomienda
+un repo privado. Sin esos archivos con permiso no hay copia bit a bit: este
+proyecto es y sigue siendo una reconstrucción 100% offline hecha con geometría
+y texturas generadas por código.

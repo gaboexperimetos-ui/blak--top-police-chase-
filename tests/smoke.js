@@ -85,7 +85,7 @@ if (BTP) {
 section('3. Garaje, mejoras y guardado');
 if (BTP) {
   const G = BTP.Garage, S = BTP.Save;
-  ok('12 coches', G.CARS.length === 12, String(G.CARS.length));
+  ok('21 coches base del bundle', G.CARS.length === 21, String(G.CARS.length));
   ok('12 pinturas', G.COLORS.length === 12, String(G.COLORS.length));
   ok('4 líneas de mejoras', G.UPGRADE_KEYS.length === 4);
   ok('stats base', Math.abs(G.stats('muscle').speed - 32) < 0.01);
@@ -99,7 +99,7 @@ if (BTP) {
   BTP.I18n.set('en');
   ok('idioma EN', BTP.I18n.t('menu.play') === 'PLAY');
   BTP.I18n.set('es');
-  ok('los 12 coches están desbloqueados', G.CARS.every(c => G.isUnlocked(c.id)));
+  ok('los 21 coches están desbloqueados', G.CARS.every(c => G.isUnlocked(c.id)));
   ok('las 12 pinturas están desbloqueadas', G.COLORS.every(c => G.isColorUnlocked(c.hex)));
   ok('2 jugadores disponible desde el inicio', G.isSplit() === true);
   ok('seleccionar cualquier coche sin comprar', G.selectCar('hyper') && G.selected().id === 'hyper');
@@ -125,6 +125,7 @@ if (BTP) {
 section('4. Variedad de vehículos, arte y spawns');
 if (BTP) {
   const src = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
+  const s2 = src;
   const models = src('src/models.js'), ai = src('src/ai.js');
   const city = src('src/city.js'), game = src('src/game.js'), css = src('styles.css');
   ['muscle', 'sedan', 'hatch', 'sport', 'super', 'hyper', 'police', 'van', 'pickup', 'truck', 'bus']
@@ -144,6 +145,16 @@ if (BTP) {
   ok('patrulla negra con capó naranja y muscle con capó dorado',
     models.includes('policeOrange') && models.includes('goldHood'));
   ok('flechas verdes grandes y haz del objetivo', src('src/missions.js').includes('2.9') && models.includes('opacity: 0.24'));
+  ok('6 niveles de persecución ALCANZABLES (7 umbrales)',
+    /LEVEL_THRESHOLDS = \[[^\]]*155\]/.test(ai) && BTP.C.MAX_WANTED === 6);
+  ok('21 nombres reales del bundle en el garaje',
+    s2('src/garage.js').includes('ACHERON REDHAWK') &&
+    s2('src/garage.js').includes('CAROLINA CORSAIR') &&
+    s2('src/garage.js').includes('LOWPOLY SUPERBASIC'));
+  ok('ids del catálogo y del guardado coinciden (21)',
+    BTP.Garage.CARS.every(c => BTP.Save.data.unlocked.indexOf(c.id) >= 0));
+  ok('documento del bundle guardado en el repo',
+    fs.existsSync(path.join(ROOT, 'blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-INFO.md')));
 }
 
 section('5. Garantía OFFLINE (cero peticiones externas)');

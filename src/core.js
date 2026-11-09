@@ -225,8 +225,11 @@
   /* --------------------------- Guardado local --------------------------- */
   // El original deja elegir todos los coches y jugar en pantalla dividida
   // desde el principio: sin grind ni paywalls para acceder al contenido.
+  // 21 vehículos base detectados en Build.data del original (Unity WebGL).
   var ALL_CARS = ['muscle', 'compact', 'sedan', 'taxi', 'van', 'pickup', 'sport',
-    'interceptor', 'supergt', 'armored', 'hyper', 'musclepro'];
+    'interceptor', 'supergt', 'armored', 'hyper', 'musclepro',
+    'corsair', 'bonheur', 'mayflower', 'deaconm', 'montpellier',
+    'monacodriv', 'wagon', 'lowpoly', 'lowpolysuper'];
   var ALL_COLORS = ['#f57c1f', '#e8412f', '#f5c518', '#ff7fb0', '#8b46e8', '#2e6ee8',
     '#25c9e8', '#2fae67', '#a6e34b', '#f2f2f2', '#22252c', '#c0c6cf'];
   function defaults() {

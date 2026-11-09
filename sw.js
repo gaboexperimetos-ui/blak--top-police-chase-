@@ -1,12 +1,13 @@
 /* Service Worker: cachea TODOS los archivos para jugar sin conexión tras la primera carga. */
 'use strict';
-const CACHE = 'btp-offline-v6';
+const CACHE = 'btp-offline-v7';
 const ASSETS = [
   './', './index.html', './styles.css', './sw.js',
   './vendor/three.min.js', './vendor/THREE-LICENSE.txt',
   './src/core.js', './src/audio.js', './src/models.js', './src/city.js',
   './src/physics.js', './src/ai.js', './src/garage.js', './src/missions.js',
-  './src/ui.js', './src/game.js'
+  './src/ui.js', './src/game.js',
+  './blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-INFO.md'
 ];
 
 self.addEventListener('install', (event) => {

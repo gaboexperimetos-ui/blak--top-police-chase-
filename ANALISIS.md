@@ -72,7 +72,7 @@ Ciudad abierta **low-poly** con: calles anchas y avenidas, **callejones**, **mue
 
 ## 6. Progresión y garaje
 
-- **12 coches** (aquí disponibles desde el primer arranque), cada uno con sus propias estadísticas de **velocidad, agarre, peso y salud** y una silueta 3D diferenciada. Los ligeros cambian de dirección rápido; los pesados sobreviven mejor a los impactos y atraviesan bloqueos [1](https://www.lllgame.com/racing/41427.html).
+- **21 vehículos base** detectados en `Build.data` del bundle original (357 archivos `.obj` contando variantes de pintura, policía y especiales); las fichas públicas hablaban de 12 coches [1](https://www.lllgame.com/racing/41427.html). Aquí los 21 están disponibles desde el primer arranque, cada uno con sus propias estadísticas de **velocidad, agarre, peso y salud**. Los ligeros cambian de dirección rápido; los pesados sobreviven mejor a los impactos y atraviesan bloqueos.
 - **12 colores de pintura**.
 - **Monedas / dinero** para comprar coches, pintura y (según versión) mejoras de velocidad, manejo, durabilidad y nitro [5](https://poku.games/blacktop-police-chase/), [4](https://bizofgames.com/game/blacktop-police-chase/).
 - **Pantalla dividida para 2 jugadores** que en algunas versiones se desbloquea gastando dinero ganado [1](https://poki.org.mx/en/blacktop-police-chase-free/); en este clon se concede desde el inicio para que no quede oculto tras un paywall.
@@ -100,7 +100,7 @@ Ciudad abierta **low-poly** con: calles anchas y avenidas, **callejones**, **mue
 | 13 | Tráfico civil | 26 coches con IA de retícula, giros, frenado y reciclado | `ai.js` |
 | 14 | Callejones, parques, muelles, puente, monorraíl | Generación procedural con InstancedMesh + textura de mapa | `city.js`, `models.js` |
 | 15 | Edificios con ventanas, farolas, semáforos, árboles, barcos, contenedores | Geometría procedural + fachadas en canvas | `city.js`, `models.js` |
-| 16 | **12 coches** con velocidad/agarre/peso/salud | Catálogo completo con estadísticas y siluetas distintas | `garage.js`, `models.js` |
+| 16 | **21 coches base** con velocidad/agarre/peso/salud | Catálogo completo con estadísticas y siluetas distintas | `garage.js`, `models.js` |
 | 17 | **12 pinturas** | Paleta completa disponible, aplicación en el modelo 3D y vista previa | `garage.js`, `ui.js` |
 | 18 | Mejoras de coche | 4 líneas × 5 niveles (velocidad, agarre, blindaje, nitro) | `garage.js` |
 | 19 | Monedas `$` por la ciudad | 132 puntos + ruta dinámica, recogida, respawn y power-ups | `city.js`, `missions.js` |
@@ -139,13 +139,13 @@ Para maximizar el parecido con la versión de Poki se añadió un conmutador (`A
 | Avisos | Sin toasts durante la conducción; `GO!` y resultados en inglés | Avisos y resultados en el idioma elegido |
 | Edificios | Paleta piedra/arenisca del original | Igual (la ciudad es compartida) |
 
-Archivos implicados: `core.js` (ajuste + rótulos), `ui.js` (`setClassic`, HUD), `missions.js` (`classic`), `models.js` (livery y flechas), `city.js` (paleta), `styles.css` (`.hud.classic`). Los dos modos comparten el mismo motor, la misma física, los 12 coches, los 6 niveles de policía y el juego offline.
+Archivos implicados: `core.js` (ajuste + rótulos), `ui.js` (`setClassic`, HUD), `missions.js` (`classic`), `models.js` (livery y flechas), `city.js` (paleta), `styles.css` (`.hud.classic`). Los dos modos comparten el mismo motor, la misma física, los 21 coches, los 6 niveles de policía y el juego offline.
 
 ---
 
 ## 8. Lo que NO se clonó literalmente (y por qué)
 
-> **Sobre el «100% igual»**: una copia bit a bit exigiría redistribuir el bundle compilado y los modelos 3D propiedad de Steelpan Interactive / Poki. Eso es material con copyright que no puedo extraer ni publicar en un repositorio público (y además el original necesita internet para cargar desde Poki, justo lo contrario del requisito de jugar sin wifi). Lo que sí se entrega es una **réplica funcional y visualmente equivalente**: mismo bucle, mismos controles, mismo HUD en Modo Original, mismos 6 niveles, 12 coches, 12 pinturas, ciudad y persecución, con arte propio generado por código.
+> **Sobre el «100% igual»**: una copia bit a bit exigiría redistribuir el bundle compilado y los modelos 3D propiedad de Steelpan Interactive / Poki. Eso es material con copyright que no puedo extraer ni publicar en un repositorio público (y además el original necesita internet para cargar desde Poki, justo lo contrario del requisito de jugar sin wifi). Lo que sí se entrega es una **réplica funcional y visualmente equivalente**: mismo bucle, mismos controles, mismo HUD en Modo Original, mismos 6 niveles, 21 coches, 12 pinturas, ciudad y persecución, con arte propio generado por código.
 
 | Elemento | Motivo | Solución aquí |
 |---|---|---|
@@ -171,8 +171,8 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 
 ## 10. Verificación realizada
 
-- `npm test` → **99 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
-- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 5 con bloqueos/pinchos/helicóptero, garaje con 12 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v6 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
+- `npm test` → **103 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
+- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 6 con bloqueos/pinchos/helicóptero, garaje con 21 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v7 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
 
 ---
 
@@ -190,7 +190,7 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 
 ### 10.1 Revisión de arte y spawns
 
-Tras la primera entrega se detectó que el aspecto era demasiado genérico: un único modelo de caja para todos los vehículos, spawns aleatorios por distancia y contenido bloqueado tras pagos. La revisión actual añade 11 perfiles de carrocería con cabinas, cristales, guardabarros, luces y detalles por tipo; tráfico con autobuses, camiones, taxis, furgonetas y pickups; `City.roadPointAhead()` para generar tráfico, policía y monedas dentro del cono de visión; aparición gradual (`beginSpawn`/`fadeSpawn`) y control de solapes (`farFrom`); azoteas, marquesinas, luz de relleno, sombra de contacto y cámara más cercana. Los 12 coches, las 12 pinturas y la pantalla dividida se conceden al arrancar, incluida la migración de partidas guardadas con la versión anterior.
+Tras la primera entrega se detectó que el aspecto era demasiado genérico: un único modelo de caja para todos los vehículos, spawns aleatorios por distancia y contenido bloqueado tras pagos. La revisión actual añade 11 perfiles de carrocería con cabinas, cristales, guardabarros, luces y detalles por tipo; tráfico con autobuses, camiones, taxis, furgonetas y pickups; `City.roadPointAhead()` para generar tráfico, policía y monedas dentro del cono de visión; aparición gradual (`beginSpawn`/`fadeSpawn`) y control de solapes (`farFrom`); azoteas, marquesinas, luz de relleno, sombra de contacto y cámara más cercana. Los 21 coches, las 12 pinturas y la pantalla dividida se conceden al arrancar, incluida la migración de partidas guardadas con la versión anterior.
 
 **Referencia visual añadida**: el usuario aportó una captura de partida y la portada oficial. Con ellas se calibraron cámara, HUD, asfalto, hierba, fachadas y librea de los coches (§10.2). Las imágenes se usaron solo como referencia de comparación y **no se incorporaron al juego**.
 
@@ -208,3 +208,25 @@ Tras la primera entrega se detectó que el aspecto era demasiado genérico: un �
 | Coche `01` | Naranja, capó dorado, defensas, faros amarillos | Capó dorado, bull bar, faros `#ffe14d`, número `01` |
 | Patrulla | Negra con capó/techo naranja, escudo y sirena | Librea negra + naranja, escudo blanco, barra rojo/azul |
 | Flechas | Verdes grandes sobre la calzada | Escala `2.9` y haz del objetivo más visible |
+
+### 10.3 Adelanto del bundle real (aporte de OpenCode, 2026-11-09)
+
+Se recibió un documento con el análisis de `Build.data` (Unity WebGL
+`2023.2.20f1`, `UnityWebData 1.0`, `960×600`, CDN de GameMonetize). Guardado en
+`blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-INFO.md`, contiene:
+
+| Dato del original | Uso en el clon |
+| --- | --- |
+| 6 niveles de persecución | Corregidos los umbrales de `src/ai.js` (antes el nivel 6 era inalcanzable). |
+| 21 vehículos base / 357 `.obj` | Catálogo de `src/garage.js` ampliado a 21 con los nombres reales; `src/core.js` los concede en `unlocked`. |
+| 12 pinturas `CarsPaletteV2` | Paleta documentada; se conservan las 12 pinturas equivalentes del clon. |
+| `Blacktop1_Save`, `unlockedCars`, `hiScore` | Documentado; se conserva la clave propia para no invalidar partidas. |
+| Control `WASD`/flechas, `Space`, `B`, `Shift` | Ya coincidía con la implementación. |
+| Mapa: Alley, Dock, Monorail, Fountain, Hedge, Ramp | Pendiente de réplica procedural; no implementado aún. |
+| 78 texturas / 77 materiales | Solo inventariados, no incorporados. |
+
+**Aviso legal**: es un inventario de nombres y metadatos, no una copia de
+activos. El repositorio es público y los modelos/texturas/audio de Steelpan
+Interactive están protegidos; distribuirlos exigiría licencia y un repo privado.
+Por tanto el límite del §10.1 sigue vigente: la identidad exacta requiere los
+assets originales autorizados.
