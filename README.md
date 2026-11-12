@@ -92,7 +92,7 @@ src/garage.js         21 coches, 12 pinturas, mejoras y desbloqueos
 src/missions.js       misiones, modos, monedas, combos y resultados
 src/ui.js             HUD, minimapa, menús, garaje y controles táctiles
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        103 comprobaciones sin navegador (npm test)
+tests/smoke.js        108 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -101,10 +101,10 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 103 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
+npm test    # 108 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
 ```
 
-También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v7 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
+También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v8 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
 
 ---
 
@@ -179,3 +179,27 @@ Interactive / Poki tienen derechos de autor. No se deben subir aquí los `.obj`,
 un repo privado. Sin esos archivos con permiso no hay copia bit a bit: este
 proyecto es y sigue siendo una reconstrucción 100% offline hecha con geometría
 y texturas generadas por código.
+
+
+---
+
+## Diseño 3D según el inventario del bundle
+
+Con los nombres de `Build.data` se amplió la ciudad (siempre con geometría
+propia generada por código, sin copiar assets):
+
+- **5 estilos de fachada**: rejilla de oficinas, piedra con arcos, torre de
+  cristal, ladrillo *Oldblock* y rascacielos con franjas verticales. Se ajustó
+  el peso para que domine la piedra beige de las capturas reales.
+- **Monorraíl completo**: viga elevada con **pórticos de soporte en las aceras**
+  (nunca un pilar sobre la calzada), `Monorail Corner`, tramo perpendicular,
+  `Straight 3x Support`, **`Building Monorail Station`** y un tren con morro
+  *Front*, coche *Rear*, ventanas corridas, puertas, franja y bogies con ruedas.
+- **Parques**: `Fountain` con pilas, surtidor y gotas, `Statue Pedestal Generic`,
+  `Ramp` / `Double Ramp`, y setos `Hedge Straight / Corner / Edge / Half / Gate`
+  instanciados en el perímetro (720 tramos) con abertura de acceso.
+- **Callejones**: `Alleywall` en 3D a ambos lados del paso estrecho.
+- Se eliminó una declaración duplicada de `InstancedMesh` en `buildBlocks`.
+
+Verificado en Chromium real: **771 draw calls / ~63.800 triángulos**, 20 mallas
+instanciadas, **0 errores de consola y 0 peticiones a internet**.

@@ -180,6 +180,7 @@
     /* ----------------------------- Manzanas ------------------------------ */
     buildBlocks: function (ctx) {
       var rng = this.rng, bodies = [], facades = [], roofs = [], trees = [], lamps = [];
+      var hedges = [], walls = [], parkSpecials = [], parkCount = 0;
       var palette = BUILD_COLORS;
       for (var i = -HALF; i < HALF; i++) for (var j = -HALF; j < HALF; j++) {
         if ((i + 0.5) * G > C.WATER_X - 40) continue; // muelles
@@ -195,6 +196,26 @@
           // bancos y farolas de parque
           lamps.push({ x: cx - bw * 0.3, z: cz - bd * 0.3, s: 0.7 });
           lamps.push({ x: cx + bw * 0.3, z: cz + bd * 0.3, s: 0.7 });
+          // Hedge Straight / Corner / Edge / Half / Gate: setos perimetrales
+          // con una abertura de acceso (Gate) en el lado sur.
+          var seg = 4.4, hy = 0.72;
+          for (var hx = r.x0 + seg / 2; hx < r.x1; hx += seg) {
+            hedges.push({ x: hx, z: r.z0 + 1.0, rot: 0, len: seg * 0.94, c: (i + j + 30) % 3 });
+            if (!(hx > cx - seg && hx < cx + seg)) {
+              hedges.push({ x: hx, z: r.z1 - 1.0, rot: 0, len: seg * 0.94, c: (i + j + 31) % 3 });
+            }
+          }
+          for (var hz = r.z0 + seg / 2; hz < r.z1; hz += seg) {
+            hedges.push({ x: r.x0 + 1.0, z: hz, rot: Math.PI / 2, len: seg * 0.94, c: (i + j + 32) % 3 });
+            hedges.push({ x: r.x1 - 1.0, z: hz, rot: Math.PI / 2, len: seg * 0.94, c: (i + j + 33) % 3 });
+          }
+          hedges.push({ x: r.x0 + 1.0, z: r.z0 + 1.0, rot: 0, len: 1.5, c: 1, corner: true });
+          hedges.push({ x: r.x1 - 1.0, z: r.z1 - 1.0, rot: 0, len: 1.5, c: 1, corner: true });
+          // Fountain / Statue Pedestal / Ramp / Raised Park en algunos parques.
+          parkCount++;
+          if (parkCount % 3 === 0) parkSpecials.push({ kind: 'fountain', x: cx, z: cz, rot: 0 });
+          else if (parkCount % 5 === 0) parkSpecials.push({ kind: 'statue', x: cx, z: cz, rot: rng() * 6.28 });
+          if (parkCount % 7 === 0) parkSpecials.push({ kind: 'ramp', x: cx + bw * 0.28, z: cz, rot: rng() < 0.5 ? 0 : Math.PI });
           continue;
         }
         var alley = isAlley(i, j);
@@ -209,6 +230,11 @@
           ];
           ctx.fillStyle = '#3a3d40';
           ctx.fillRect(toPx(r.x0), toPx(cz - 3.2), toUnits(1) * bw, toUnits(1) * 6.4);
+          // Alleywall: muros de ladrillo a ambos lados del callejón.
+          walls.push({ x: cx, z: cz - 3.6, w: bw * 0.92, h: 3.6 });
+          walls.push({ x: cx, z: cz + 3.6, w: bw * 0.92, h: 3.6 });
+          walls.push({ x: r.x0 + 0.8, z: cz, w: 6.4, h: 3.2, rot: Math.PI / 2 });
+          walls.push({ x: r.x1 - 0.8, z: cz, w: 6.4, h: 3.2, rot: Math.PI / 2 });
         } else if (count === 1) {
           specs = [{ x: cx, z: cz, w: bw * U.rand(0.72, 0.92), d: bd * U.rand(0.72, 0.92) }];
         } else if (count === 2) {
@@ -230,8 +256,14 @@
         }
         specs.forEach(function (sp, idx) {
           var h = 9 + Math.pow(rng(), 1.5) * 42 + ((i === 0 || j === 0) ? 8 : 0);
-          var glass = rng() < .18;
-          var style = glass ? 2 : (rng() < .45 ? 1 : 0);
+          var glass = rng() < .07;
+          // 5 estilos del bundle: rejilla, arcos de piedra, cristal,
+          // Oldblock de ladrillo y rascacielos con franjas verticales.
+          var sRoll = rng();
+          // La captura real es casi toda piedra beige con arcos y solo una
+          // torre de cristal: se limitan mucho los estilos azules.
+          var style = glass ? 2 : (sRoll < .46 ? 1 : sRoll < .72 ? 0 :
+            sRoll < .88 ? 3 : sRoll < .95 ? 2 : 4);
           var color = glass ? '#8fb6cf' : palette[Math.floor(rng() * palette.length)];
           bodies.push({ x: sp.x, z: sp.z, w: sp.w, d: sp.d, h: h, color: color, glass: glass });
           facades.push({ x: sp.x, z: sp.z, w: sp.w, d: sp.d, h: h, glass: glass, style: style });
@@ -244,7 +276,7 @@
       // Instancias: cuerpos, fachadas, cornisas
       var bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
       var bodyMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), bodyMat, bodies.length);
-      var facadeGroups = [[], [], []];
+      var facadeGroups = [[], [], [], [], []];
       facades.forEach(function (b) { facadeGroups[b.style].push(b); });
       var roofMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
         new THREE.MeshLambertMaterial({ color: 0xffffff }), roofs.length);
@@ -293,8 +325,6 @@
          rompen la monotonia de los bloques y dan vida a la calle. */
       var units = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
         new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, bodies.length * 2));
-      var units = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
-        new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, bodies.length * 2));
       var ui = 0, uc = new THREE.Color();
       bodies.forEach(function (bd, k) {
         q.identity();
@@ -322,8 +352,10 @@
       units.castShadow = true;
       this.group.add(units, doors);
 
-      // Árboles y farolas instanciados
+      // Árboles, farolas, setos, muros de callejón y mobiliario de parque
       this.addInstancedProps(trees, lamps);
+      this.addHedgesAndWalls(hedges, walls);
+      this.addParkSpecials(parkSpecials);
       // Semáforos en algunas intersecciones
       for (var si = -HALF; si <= HALF; si += 2) for (var sj = -HALF; sj <= HALF; sj += 2) {
         if ((si + sj) % 4 !== 0) continue;
@@ -372,6 +404,52 @@
         function (it, put) { put(new THREE.Vector3(it.x + 1.2, 6.42, it.z), null, new THREE.Vector3(1, 1, 1)); });
       trunk.receiveShadow = true; foliage.castShadow = true;
       this.group.add(trunk, foliage, pole, head);
+    },
+
+    /* --------- Hedge / Alleywall / Fountain / Ramp / Statue (bundle) ------ */
+    addHedgesAndWalls: function (hedges, walls) {
+      var mtx = new THREE.Matrix4(), q = new THREE.Quaternion(),
+          p = new THREE.Vector3(), sv = new THREE.Vector3(), col = new THREE.Color();
+      var hedgeMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, hedges.length));
+      var greens = ['#3f8443', '#4a9550', '#357a3d'];
+      hedges.forEach(function (h, k) {
+        q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), h.rot || 0);
+        p.set(h.x, h.corner ? 0.95 : 0.72, h.z);
+        sv.set(h.corner ? 1.5 : h.len, h.corner ? 1.9 : 1.45, 0.8);
+        mtx.compose(p, q, sv); hedgeMesh.setMatrixAt(k, mtx);
+        col.set(greens[h.c % greens.length]); hedgeMesh.setColorAt(k, col);
+      });
+      hedgeMesh.count = hedges.length;
+      hedgeMesh.instanceMatrix.needsUpdate = true;
+      if (hedgeMesh.instanceColor) hedgeMesh.instanceColor.needsUpdate = true;
+      hedgeMesh.castShadow = true; this.group.add(hedgeMesh);
+
+      var wallMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), Math.max(1, walls.length));
+      walls.forEach(function (w, k) {
+        q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), w.rot || 0);
+        p.set(w.x, w.h / 2, w.z); sv.set(w.w, w.h, 0.6);
+        mtx.compose(p, q, sv); wallMesh.setMatrixAt(k, mtx);
+        col.set('#7a6152'); wallMesh.setColorAt(k, col);
+      });
+      wallMesh.count = walls.length;
+      wallMesh.instanceMatrix.needsUpdate = true;
+      if (wallMesh.instanceColor) wallMesh.instanceColor.needsUpdate = true;
+      wallMesh.castShadow = true; this.group.add(wallMesh);
+      this.hedgeProps = { hedges: hedges.length, walls: walls.length };
+    },
+
+    addParkSpecials: function (list) {
+      var self = this;
+      list.forEach(function (it) {
+        var obj = it.kind === 'fountain' ? M.makeFountain()
+          : it.kind === 'statue' ? M.makeStatue() : M.makeRamp(it.kind === 'ramp' && list.length % 2 === 0);
+        obj.position.set(it.x, 0, it.z);
+        obj.rotation.y = it.rot || 0;
+        self.group.add(obj);
+      });
+      this.parkSpecials = list.length;
     },
 
     /* -------------------- Edificios especiales / puntos ------------------- */
@@ -450,17 +528,67 @@
 
     /* ---------------------------- Monorraíl ------------------------------ */
     buildMonorail: function () {
-      var railMat = new THREE.MeshLambertMaterial({ color: '#b7bec6' });
-      var rail = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, 2 * HALF * G + G), railMat);
+      var self = this, railMat = new THREE.MeshLambertMaterial({ color: '#b7bec6' });
+      var pillarMat = new THREE.MeshLambertMaterial({ color: '#8e959d' });
+      var span = 2 * HALF * G + G, legX = RW / 2 + 3.2;
+      // Monorail Straight: viga elevada en x = 0 (suspendida, sin pilares
+      // sobre la calzada) y Monorail Corner 1x1 con tramo perpendicular.
+      var rail = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, span), railMat);
       rail.position.set(0, 16.5, 0); this.group.add(rail);
-      for (var z = -HALF * G + G / 2; z <= HALF * G; z += G) {
-        var pillar = new THREE.Mesh(new THREE.BoxGeometry(1.0, 16, 1.0), new THREE.MeshLambertMaterial({ color: '#8e959d' }));
-        pillar.position.set(RW / 2 + 7, 8, z); this.group.add(pillar);
+      var cap = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.3, span), pillarMat);
+      cap.position.set(0, 17.2, 0); this.group.add(cap);
+      var cz = -3 * G;
+      var cross = new THREE.Mesh(new THREE.BoxGeometry(5 * G, 1.2, 2.2), railMat);
+      cross.position.set(2.5 * G, 16.5, cz); this.group.add(cross);
+      var corner = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 1.2, 12), railMat);
+      corner.position.set(0, 16.5, cz); this.group.add(corner);
+
+      /* Soportes: Monorail Straight 3x Support en PÓRTICOS sobre las aceras.
+         Todo en una sola malla instanciada (4 draw calls en total) para que el
+         móvil no pague decenas de llamadas por columna. */
+      var parts = [];
+      function add(x, y, z, sx, sy, sz, rz, color) {
+        parts.push({ p: [x, y, z], s: [sx, sy, sz], rz: rz || 0, c: color || '#9aa3ab' });
       }
+      for (var z = -HALF * G + G / 2; z <= HALF * G; z += G) {
+        [-1, 1].forEach(function (sd) {
+          add(sd * legX, 7.9, z, 1.1, 15.8, 1.1, 0);
+          add(sd * legX, 0.25, z, 2.0, 0.5, 2.0, 0, '#7f8790');
+          add(sd * (legX - 1.6), 13.6, z, 0.4, 4.6, 0.4, sd * 0.55, '#aab2ba');
+        });
+        add(0, 15.9, z, legX * 2 + 1, 0.8, 1.1, 0, '#b7bec6');
+      }
+      for (var xp = G; xp <= 5 * G; xp += G) {
+        [-1, 1].forEach(function (sd) {
+          add(xp, 7.9, cz + sd * legX, 1.0, 15.8, 1.0, 0);
+          add(xp, 0.25, cz + sd * legX, 1.8, 0.5, 1.8, 0, '#7f8790');
+        });
+        add(xp, 15.9, cz, 1.1, 0.8, legX * 2, 0, '#b7bec6');
+      }
+      var im = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1),
+        new THREE.MeshLambertMaterial({ color: 0xffffff }), parts.length);
+      var mtx = new THREE.Matrix4(), q = new THREE.Quaternion(),
+          pv = new THREE.Vector3(), sv = new THREE.Vector3(), col = new THREE.Color();
+      parts.forEach(function (it, k) {
+        if (it.rz) q.setFromAxisAngle(new THREE.Vector3(0, 0, 1), it.rz); else q.identity();
+        pv.set(it.p[0], it.p[1], it.p[2]); sv.set(it.s[0], it.s[1], it.s[2]);
+        mtx.compose(pv, q, sv); im.setMatrixAt(k, mtx);
+        col.set(it.c); im.setColorAt(k, col);
+      });
+      im.instanceMatrix.needsUpdate = true;
+      if (im.instanceColor) im.instanceColor.needsUpdate = true;
+      im.castShadow = true; this.group.add(im);
+      this.monorailSupports = parts.length;
+
+      // Building Monorail Station
+      var station = M.makeMonorailStation();
+      station.position.set(2 * G, 0, cz - 10);
+      this.group.add(station);
       var train = M.makeMonorailTrain();
       train.position.set(0, 17.6, -HALF * G);
       this.group.add(train);
       this.monorail = train;
+      this.monorailStations = 1;
     },
 
     /* ------------------------- Farolas de calle --------------------------- */

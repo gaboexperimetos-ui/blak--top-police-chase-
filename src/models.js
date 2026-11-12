@@ -44,7 +44,10 @@
   M.facadeTexture = function (variant) {
     var key = 'facade' + variant;
     if (cache[key]) return cache[key];
-    var style = variant % 3;
+    /* 5 estilos de fachada según el inventario del bundle original:
+       0 rejilla de oficinas, 1 piedra con arcos, 2 torre de cristal,
+       3 ladrillo Oldblock, 4 rascacielos con franjas verticales. */
+    var style = variant % 5;
     var palettes = [
       ['#20304a', '#8fd8ff'], ['#2b2a33', '#ffd98c'], ['#26343a', '#b9f0e0'],
       ['#3a3040', '#ffb4c8'], ['#2d3b33', '#e8ffb0']
@@ -69,6 +72,37 @@
           g.beginPath(); g.arc(x + 9, yy, 9, Math.PI, 0); g.fill();
           g.strokeStyle = 'rgba(255,255,255,.4)'; g.lineWidth = 2;
           g.strokeRect(x, yy, 18, 26);
+        }
+      } else if (style === 3) {
+        // Oldblock: ladrillo visto con ventanas pequeñas y dintel claro.
+        g.fillStyle = '#a9684c'; g.fillRect(0, 0, w, h);
+        for (var by = 0; by < h; by += 16) {
+          g.fillStyle = (by / 16) % 2 ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.09)';
+          g.fillRect(0, by, w, 8);
+          g.strokeStyle = 'rgba(90,45,30,.35)'; g.lineWidth = 1;
+          g.beginPath(); g.moveTo(0, by + 8); g.lineTo(w, by + 8); g.stroke();
+          for (var bx = (by / 16) % 2 ? 0 : 16; bx < w; bx += 32) {
+            g.beginPath(); g.moveTo(bx, by); g.lineTo(bx, by + 8); g.stroke();
+            g.beginPath(); g.moveTo(bx + 16, by + 8); g.lineTo(bx + 16, by + 16); g.stroke();
+          }
+        }
+        for (var r3 = 0; r3 < 5; r3++) for (var c3 = 0; c3 < 4; c3++) {
+          var wx = 9 + c3 * 31, wy = 14 + r3 * 48;
+          g.fillStyle = rnd() > .5 ? '#31404a' : '#22333c'; g.fillRect(wx, wy, 19, 26);
+          g.fillStyle = '#d9c9ac'; g.fillRect(wx - 2, wy + 26, 23, 3);
+          g.fillStyle = 'rgba(255,255,255,.22)'; g.fillRect(wx + 2, wy + 2, 4, 22);
+        }
+      } else if (style === 4) {
+        // Skyscraper: franjas verticales de cristal con montantes.
+        g.fillStyle = '#274a63'; g.fillRect(0, 0, w, h);
+        for (var fx = 0; fx < w; fx += 20) {
+          g.fillStyle = rnd() > .5 ? '#69a9cf' : '#4d8bb4';
+          g.fillRect(fx + 3, 0, 14, h);
+          g.fillStyle = 'rgba(255,255,255,.30)'; g.fillRect(fx + 3, 0, 2, h);
+          g.fillStyle = 'rgba(10,30,45,.45)'; g.fillRect(fx + 16, 0, 4, h);
+        }
+        for (var fy = 0; fy < h; fy += 22) {
+          g.fillStyle = 'rgba(230,240,250,.35)'; g.fillRect(0, fy, w, 2);
         }
       } else {
         var cols = 4, rows = 8, pad = 10;
@@ -636,12 +670,125 @@
     return g;
   };
 
+  /* Monorraíl del bundle: Monorail Front / Middle / Rear / Straight Support.
+     Tres coches con morro, ventanas corridas, puertas, franja y bogies. */
   M.makeMonorailTrain = function () {
     var g = new THREE.Group();
+    var shell = mat('#eef2f5'), glass = mat('#2a6fa8'), trim = mat('#ffce2b');
     for (var i = 0; i < 3; i++) {
-      var car = box(3.2, 2.5, 8, mat(i === 0 ? '#ffce2b' : '#e9edf2'), 0, 0, i * 8.4, g);
-      box(2.6, 0.9, 6, mat('#2a6fa8'), 0, 0.4, i * 8.4, g);
+      var z = i * 8.4, grp = new THREE.Group(); grp.position.z = z; g.add(grp);
+      box(3.2, 2.5, 8, shell, 0, 0, 0, grp);
+      box(3.3, 0.28, 8.1, trim, 0, -0.85, 0, grp);
+      box(3.24, 0.26, 8.05, mat('#d8dee3'), 0, 1.28, 0, grp);
+      // Ventanas corridas en ambos lados
+      [-1, 1].forEach(function (sd) {
+        box(0.06, 0.95, 6.2, glass, sd * 1.63, 0.28, 0, grp);
+        for (var w = -2; w <= 2; w++) {
+          box(0.08, 0.99, 0.09, mat('#cfd8de'), sd * 1.67, 0.28, w * 1.25, grp);
+        }
+        box(0.10, 2.0, 0.75, mat('#c3ccd3'), sd * 1.65, -0.05, 3.1, grp); // puerta
+      });
+      // Bogies bajo el coche
+      [-2.5, 2.5].forEach(function (bz) {
+        box(1.5, 0.55, 1.1, mat('#4a545d'), 0, -1.55, bz, grp);
+        [-1, 1].forEach(function (sd) {
+          var wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.22, 10), mat('#252c33'));
+          wheel.rotation.z = Math.PI / 2; wheel.position.set(sd * 0.85, -1.55, bz); grp.add(wheel);
+        });
+      });
+      if (i === 0) {
+        // Morro Front: cuña redondeada y faros
+        var nose = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 1.5, 12, 1, false, 0, Math.PI), shell);
+        nose.rotation.x = Math.PI / 2; nose.rotation.z = Math.PI / 2;
+        nose.position.set(0, 0, -4.65); grp.add(nose);
+        box(2.6, 0.8, 0.08, glass, 0, 0.45, -4.72, grp);
+        [-1, 1].forEach(function (sd) {
+          box(0.34, 0.22, 0.1, basic('#ffe9a8'), sd * 0.95, -0.55, -4.76, grp);
+        });
+      }
+      if (i === 2) {
+        box(2.9, 2.2, 0.28, mat('#d7dde2'), 0, 0, 4.08, grp); // Rear
+        [-1, 1].forEach(function (sd) {
+          box(0.3, 0.24, 0.1, basic('#e0483c'), sd * 1.0, -0.45, 4.24, grp);
+        });
+      }
     }
+    return g;
+  };
+
+  /* Building Monorail Station: plataforma elevada sobre pilares. */
+  M.makeMonorailStation = function () {
+    var g = new THREE.Group();
+    var deck = box(13, 0.8, 20, mat('#cfd4d9'), 0, 16.0, 0, g);
+    deck.receiveShadow = true;
+    box(14, 0.35, 21, mat('#8b959e'), 0, 16.55, 0, g);
+    // Tejado y marquesina
+    box(13, 0.35, 20, mat('#f0f2f4'), 0, 22.6, 0, g);
+    [-1, 1].forEach(function (sd) {
+      [-7, 0, 7].forEach(function (pz) {
+        cyl(0.32, 0.32, 6.4, 8, mat('#9aa3ab'), sd * 6.1, 19.4, pz, g);
+      });
+      box(0.16, 1.1, 19, basic('#2f6fb0', { side: THREE.DoubleSide }), sd * 6.5, 17.4, 0, g);
+    });
+    [-1, 1].forEach(function (sd) {
+      for (var px = -5; px <= 5; px += 5) {
+        cyl(0.55, 0.65, 15.5, 8, mat('#8e959d'), px, 7.75, sd * 8.5, g);
+      }
+    });
+    box(9, 1.1, 0.12, basic('#ffffff', { map: M.signTexture('MONORAIL', '#1d4f8b', '#ffffff'), side: THREE.DoubleSide }), 0, 21.4, 10.1, g);
+    return g;
+  };
+
+  /* Fountain: pilas circulares, pedestal y surtidor de agua. */
+  M.makeFountain = function () {
+    var g = new THREE.Group();
+    var stone = mat('#d8cfba');
+    var basin = new THREE.Mesh(new THREE.CylinderGeometry(5.4, 5.8, 1.0, 20), stone);
+    basin.position.y = 0.5; basin.receiveShadow = true; g.add(basin);
+    var water = new THREE.Mesh(new THREE.CylinderGeometry(4.9, 4.9, 0.12, 20),
+      basic('#5fc4ef', { transparent: true, opacity: 0.82, side: THREE.DoubleSide }));
+    water.position.y = 1.02; g.add(water);
+    var inner = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.9, 1.6, 12), stone);
+    inner.position.y = 1.7; g.add(inner);
+    var jet = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.55, 3.6, 10),
+      basic('#a8e4ff', { transparent: true, opacity: 0.55, depthWrite: false }));
+    jet.position.y = 3.6; g.add(jet);
+    var crown = new THREE.Mesh(new THREE.SphereGeometry(0.65, 10, 8),
+      basic('#d8f4ff', { transparent: true, opacity: 0.7 }));
+    crown.position.y = 5.4; g.add(crown);
+    for (var k = 0; k < 8; k++) {
+      var a = k / 8 * Math.PI * 2;
+      var drop = new THREE.Mesh(new THREE.SphereGeometry(0.22, 6, 5), basic('#bfeaff'));
+      drop.position.set(Math.cos(a) * 3.1, 2.4, Math.sin(a) * 3.1); g.add(drop);
+    }
+    g.userData.jet = jet;
+    return g;
+  };
+
+  /* Ramp / Double Ramp: plano inclinado con bordes laterales. */
+  M.makeRamp = function (doubleRamp) {
+    var g = new THREE.Group();
+    var dark = mat('#4a5058'), edge = mat('#e6c34a');
+    var width = doubleRamp ? 11 : 5.5, len = 12, h = 3.2;
+    var slope = new THREE.Mesh(new THREE.BoxGeometry(width, 0.5, len), dark);
+    slope.rotation.x = -Math.atan2(h, len); slope.position.y = h / 2 + 0.3; g.add(slope);
+    [-1, 1].forEach(function (sd) {
+      var rail = box(0.3, 0.7, len, edge, sd * (width / 2 + 0.15), h / 2 + 0.6, 0, g);
+      rail.rotation.x = -Math.atan2(h, len);
+    });
+    box(width, h, 0.6, mat('#5a626b'), 0, h / 2, len / 2, g);
+    return g;
+  };
+
+  /* Statue Pedestal Generic para los parques. */
+  M.makeStatue = function () {
+    var g = new THREE.Group();
+    box(3, 0.55, 3, mat('#c9c2ae'), 0, 0.28, 0, g);
+    box(2.2, 2.6, 2.2, mat('#d8d0bb'), 0, 1.85, 0, g);
+    var fig = new THREE.Mesh(new THREE.ConeGeometry(0.8, 2.2, 6), mat('#8d9284'));
+    fig.position.y = 4.25; g.add(fig);
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.42, 8, 6), mat('#8d9284'));
+    head.position.y = 5.6; g.add(head);
     return g;
   };
 

@@ -165,14 +165,14 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 - **Cero `fetch`, cero `import`, cero fuentes externas**: las texturas se dibujan en `<canvas>` y el sonido se sintetiza con osciladores.
 - **Service Worker** (`sw.js`) con lista explícita de assets; solo se registra bajo `http(s)` para no romper `file://`.
 - **`server.js`** usa únicamente módulos built-in de Node (`http`, `fs`, `path`): `npm start` funciona sin `npm install`.
-- **Rendimiento**: edificios, ventanas, árboles y farolas usan `InstancedMesh` (≈380 draw calls, ~29.000 triángulos), colisiones con hash espacial, partículas con pool y `pixelRatio` limitado; opción de calidad baja y sombras desactivables.
+- **Rendimiento**: edificios, ventanas, árboles y farolas usan `InstancedMesh` (≈771 draw calls, ~63.800 triángulos), colisiones con hash espacial, partículas con pool y `pixelRatio` limitado; opción de calidad baja y sombras desactivables.
 
 ---
 
 ## 10. Verificación realizada
 
-- `npm test` → **103 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
-- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 6 con bloqueos/pinchos/helicóptero, garaje con 21 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v7 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
+- `npm test` → **108 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
+- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 6 con bloqueos/pinchos/helicóptero, garaje con 21 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v8 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
 
 ---
 
@@ -230,3 +230,23 @@ activos. El repositorio es público y los modelos/texturas/audio de Steelpan
 Interactive están protegidos; distribuirlos exigiría licencia y un repo privado.
 Por tanto el límite del §10.1 sigue vigente: la identidad exacta requiere los
 assets originales autorizados.
+
+
+### 10.4 Diseño 3D según el inventario del bundle
+
+| Elemento del original | Implementación en el clon |
+| --- | --- |
+| `Building 1..98` (Skyscraper / Oldblock / Riverside) | 5 estilos de `facadeTexture` con pesos calibrados a las capturas |
+| `Monorail Straight / Corner / Support` | Viga elevada, esquina en L y pórticos laterales con tirantes |
+| `Building Monorail Station` | Estación con plataforma, columnas, marquesina y rótulo |
+| `Monorail Front / Middle / Rear` | Tren de 3 coches con morro, ventanas, puertas y bogies |
+| `Fountain` | Pila circular, agua translúcida, surtidor y gotas |
+| `Hedge Corner / Edge / Gate / Half / Straight` | Setos perimetrales instanciados con abertura |
+| `Ramp / Double Ramp` | Planos inclinados con bordes amarillos |
+| `Statue Pedestal Generic`, `Alleywall` | Estatua de parque y muros 3D de callejón |
+
+Corrección visual detectada en captura: los soportes del monorraíl estaban
+inicialmente en `x = 0`, **sobre la calzada**, produciendo un poste delante del
+coche. Se sustituyeron por pórticos apoyados en `±(ROAD_W/2 + 3.2)`. También se
+redujo la proporción de fachadas de cristal azul, que no coincidía con la
+captura del original.

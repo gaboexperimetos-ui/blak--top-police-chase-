@@ -136,7 +136,7 @@ if (BTP) {
   ok('spawns sin amontonamiento', ai.includes('farFrom'));
   ok('tráfico con autobuses, camiones y taxis',
     /shape: 'bus'/.test(ai) && /shape: 'truck'/.test(ai) && /taxi: true/.test(ai));
-  ok('ciudad con azoteas, portales y 3 estilos de fachada', city.includes('units') && city.includes('doors') && city.includes('facadeGroups'));
+  ok('ciudad con azoteas, portales y 5 estilos de fachada', city.includes('units') && city.includes('doors') && city.includes('facadeGroups') && city.includes('[[], [], [], [], []]'));
   ok('luz de relleno y cielo degradado', game.includes('fill') && game.includes('skyTex'));
   ok('cámara alta como la captura original', /13\.0/.test(game) && /9\.5/.test(game));
   ok('líneas de calle blancas (no amarillas)', city.includes("'#f4f4ee'") && city.includes('setLineDash'));
@@ -155,6 +155,18 @@ if (BTP) {
     BTP.Garage.CARS.every(c => BTP.Save.data.unlocked.indexOf(c.id) >= 0));
   ok('documento del bundle guardado en el repo',
     fs.existsSync(path.join(ROOT, 'blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-INFO.md')));
+  ok('monorraíl con pórticos laterales (sin pilar en la calzada)',
+    city.includes('legX = RW / 2 + 3.2') && city.includes('this.monorailSupports'));
+  ok('estación, esquina y soportes del monorraíl',
+    city.includes('makeMonorailStation') && city.includes('Monorail Corner'));
+  ok('fuente, estatua, rampa y setos del bundle',
+    models.includes('M.makeFountain') && models.includes('M.makeStatue') &&
+    models.includes('M.makeRamp') && city.includes('addHedgesAndWalls'));
+  ok('muros de callejón y 5 estilos de facadeTexture',
+    city.includes('Alleywall') && models.includes('variant % 5') &&
+    models.includes('Oldblock') && models.includes('Skyscraper'));
+  ok('tren del monorraíl con Front, Rear y bogies',
+    models.includes('Monorail Front / Middle / Rear') && models.includes('bogies'));
 }
 
 section('5. Garantía OFFLINE (cero peticiones externas)');
