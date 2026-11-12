@@ -92,7 +92,7 @@ src/garage.js         21 coches, 12 pinturas, mejoras y desbloqueos
 src/missions.js       misiones, modos, monedas, combos y resultados
 src/ui.js             HUD, minimapa, menús, garaje y controles táctiles
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        108 comprobaciones sin navegador (npm test)
+tests/smoke.js        117 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -101,10 +101,10 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 108 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
+npm test    # 117 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
 ```
 
-También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v8 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
+También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v9 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
 
 ---
 
@@ -203,3 +203,34 @@ propia generada por código, sin copiar assets):
 
 Verificado en Chromium real: **771 draw calls / ~63.800 triángulos**, 20 mallas
 instanciadas, **0 errores de consola y 0 peticiones a internet**.
+
+
+---
+
+## Cómo integrar los diseños originales (lo que falta de verdad)
+
+**A día de hoy NO ha llegado ningún modelo, textura ni audio del juego real.**
+Solo se recibió el informe con los nombres del `Build.data`. Todo el 3D que se
+ve ahora es geometría inventada por código: por eso no se parece a los diseños
+originales. Seguir añadiendo adornos procedurales no lo arregla.
+
+Para que el juego use los modelos reales:
+
+1. Adjuntar al chat **un solo `.tar.gz`** con `models/*.obj` (357),
+   `textures/*.png` (78), `materials/*.json` (77) y `audio/*`. Ver la lista
+   exacta en `blacktop-police-chase-assets/ASSET-MANIFEST.json`.
+2. Descomprimirlo en `blacktop-police-chase-assets/`.
+3. Ejecutar `node tools/import-assets.js`.
+4. Recargar: `BTP.ObjMesh` sustituye automáticamente las cajas por los `.obj`
+   reales, con texturas, y `BTP.OriginalAssets.status()` lo confirma.
+
+El importador embebe los datos en `src/original-assets.js` (sin `fetch`, sin
+CDN, sin imports ESM), así que sigue funcionando **sin wifi y con `file://`**.
+Probado de punta a punta con un `.obj` de prueba: el coche devuelve el modelo
+real normalizado a 4.7 de largo, con la misma interfaz (`spin`, `setColor`,
+`setSiren`) y 0 errores de consola. Sin `.obj`, el fallback procedural sigue
+activo y el juego no se rompe.
+
+⚠️ Los assets son de Steelpan Interactive / Poki y este repo es **público**:
+solo se integrarán si llegan con licencia/autorización; si no, hay que usar un
+repo privado.

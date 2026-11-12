@@ -171,8 +171,8 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 
 ## 10. Verificación realizada
 
-- `npm test` → **108 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
-- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 6 con bloqueos/pinchos/helicóptero, garaje con 21 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v8 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
+- `npm test` → **117 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
+- Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 6 con bloqueos/pinchos/helicóptero, garaje con 21 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v9 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
 
 ---
 
@@ -250,3 +250,26 @@ inicialmente en `x = 0`, **sobre la calzada**, produciendo un poste delante del
 coche. Se sustituyeron por pórticos apoyados en `±(ROAD_W/2 + 3.2)`. También se
 redujo la proporción de fachadas de cristal azul, que no coincidía con la
 captura del original.
+
+
+### 10.5 Ingesta de assets originales (pendiente)
+
+El usuario rechazó el 3D procedural por no parecerse a los diseños que el otro
+agente iba a pasar. Causa verificada: en el workspace solo existe el informe de
+texto; `find` no encuentra ningún `.obj`, `.png`, `.fbx`, `.glb`, `.zip` ni
+`Build.data`, y el remoto no tiene commits nuevos. Los 357 modelos, 78 texturas
+y 77 materiales **nunca llegaron**.
+
+Se añadió la infraestructura para integrarlos sin reescribir el motor:
+`tools/import-assets.js` (genera `src/original-assets.js` con OBJ y PNG
+embebidos), `src/objmesh.js` (parser OBJ → `BufferGeometry`, texturas por data
+URI, normalización de escala y envoltorio compatible con `makeCar`), un hook en
+`M.makeCar`, `asset: spec.name` en `physics.js` y el manifiesto
+`ASSET-MANIFEST.json`. Verificado con un OBJ de prueba: `originalAsset`
+presente, 36 vértices, longitud 4.7, `spin`/`setColor`/`setSiren` operativos y
+0 errores. El OBJ de prueba se eliminó; el módulo generado queda vacío hasta
+que lleguen los archivos reales.
+
+**Conclusión honesta**: sin esos archivos con licencia no es posible la copia
+visual exacta. Cualquier mejora adicional hecha a mano seguirá siendo una
+invención, no el diseño original.

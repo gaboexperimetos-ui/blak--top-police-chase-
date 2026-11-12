@@ -1,0 +1,55 @@
+{
+  "proposito": "Inventario EXACTO de lo que falta para sustituir las cajas procedurales por los diseños originales.",
+  "estado": "PENDIENTE: no ha llegado ningún archivo .obj, .png, .json de materiales ni audio. Solo se recibió el informe de texto.",
+  "repo": "gaboexperimetos-ui/blak--top-police-chase- (PÚBLICO)",
+  "rama": "arena/8143a957-blak-top-police-chase",
+  "aviso_legal": "Los assets pertenecen a Steelpan Interactive / Poki. Solo se integrarán aquí si llegan con licencia/autorización; si no, usar un repo PRIVADO.",
+  "donde_poner_los_archivos": {
+    "modelos": "blacktop-police-chase-assets/models/*.obj",
+    "texturas": "blacktop-police-chase-assets/textures/*.png",
+    "materiales": "blacktop-police-chase-assets/materials/*.json",
+    "metadatos": "blacktop-police-chase-assets/metadata/*.json",
+    "audio": "blacktop-police-chase-assets/audio/*"
+  },
+  "como_entregarlos": "Empaquetar TODO en un solo .tar.gz y adjuntarlo al chat de Arena. No hace falta SSH, deploy keys ni git push desde el otro agente; Arena tiene permisos de push.",
+  "comando_empaquetado": "cd /tmp/opencode && tar --exclude='*.key' --exclude='id_*' --exclude='.env' --exclude='*token*' -czf /tmp/opencode-assets.tar.gz .",
+  "paso_de_integracion": "node tools/import-assets.js   (genera src/original-assets.js con los .obj y .png embebidos; el juego los usa automáticamente)",
+  "modelos_esperados": {
+    "total_declarado": 357,
+    "bases": 21,
+    "nombres_base": [
+      "Acheron Redhawk Base",
+      "Automobili Mangione 4000 Base",
+      "Bald Eagle Racecar",
+      "Chevalier Bonheur",
+      "Chevalier XIV",
+      "Deacon Mayflower Base Simple Paletted",
+      "DeaconM",
+      "Jerry Navigator SUV",
+      "Merkur 668",
+      "McCall Monaco",
+      "McCall Manchester Hardtop",
+      "McCall Montpellier",
+      "Monaco Bald Eagle",
+      "Monaco Driv",
+      "Nakazato Cricket Base",
+      "Pilgrim Base Simple Paletted",
+      "Station Wagon Base Simple Paletted",
+      "Carolina Corsair",
+      "Lowpoly Basic Paletted",
+      "Lowpoly SuperBasic Paletted",
+      "Bulldozer"
+    ],
+    "recibidos": 0
+  },
+  "texturas_esperadas": {
+    "total_declarado": 78,
+    "recibidas": 0
+  },
+  "materiales_esperados": {
+    "total_declarado": 77,
+    "recibidos": 0
+  },
+  "audio_esperado": "sin inventario; necesario para el 100% de sonido",
+  "resultado_sin_assets": "El juego usa siluetas procedurales inventadas: NO se parece a los diseños originales. Es la causa de la queja del usuario."
+}

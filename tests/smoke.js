@@ -10,7 +10,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-const FILES = ['core', 'audio', 'models', 'city', 'physics', 'garage', 'ai', 'missions', 'ui', 'game']
+const FILES = ['core', 'audio', 'original-assets', 'objmesh', 'models', 'city', 'physics', 'garage', 'ai', 'missions', 'ui', 'game']
   .map(n => path.join('src', n + '.js'));
 
 let pass = 0, fail = 0;
@@ -167,6 +167,17 @@ if (BTP) {
     models.includes('Oldblock') && models.includes('Skyscraper'));
   ok('tren del monorraíl con Front, Rear y bogies',
     models.includes('Monorail Front / Middle / Rear') && models.includes('bogies'));
+  ok('importador de assets originales disponible',
+    fs.existsSync(path.join(ROOT, 'tools/import-assets.js')));
+  ok('manifiesto de assets pendientes',
+    fs.existsSync(path.join(ROOT, 'blacktop-police-chase-assets/ASSET-MANIFEST.json')));
+  ok('cargador OBJ local sin red (sin fetch ni imports)',
+    src('src/objmesh.js').includes('BTP.ObjMesh') &&
+    !/\bfetch\s*\(/.test(src('src/objmesh.js')));
+  ok('makeCar usa el .obj original cuando existe',
+    models.includes('BTP.ObjMesh.car(spec)') && src('src/physics.js').includes('asset: spec.name'));
+  ok('sin assets reales el fallback sigue siendo procedural',
+    BTP.OriginalAssets.active === false && BTP.ObjMesh.count() === 0);
 }
 
 section('5. Garantía OFFLINE (cero peticiones externas)');

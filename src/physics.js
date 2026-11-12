@@ -21,6 +21,7 @@
     this.model = M.makeCar({
       shape: this.shape, color: this.color,
       number: opts.number !== undefined ? opts.number : spec.number,
+      asset: spec.name || spec.asset,   // nombre del .obj original, si existe
       scale: 1.12
     });
     this.mesh = this.model.group;

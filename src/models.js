@@ -257,6 +257,12 @@
    */
   M.makeCar = function (spec) {
     spec = spec || {};
+    /* Si hay un .obj original importado, se usa TAL CUAL y no se dibuja
+       ninguna caja procedural. Sin assets reales esto devuelve null. */
+    if (BTP.ObjMesh) {
+      var original = BTP.ObjMesh.car(spec);
+      if (original) return original;
+    }
     var shape = PROFILES[spec.shape] ? spec.shape : 'muscle';
     var police = !!spec.police, traffic = !!spec.traffic, taxi = !!spec.taxi;
     var scale = spec.scale || 1;
