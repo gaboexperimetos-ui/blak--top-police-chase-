@@ -178,6 +178,14 @@ if (BTP) {
     models.includes('BTP.ObjMesh.car(spec)') && src('src/physics.js').includes('asset: spec.name'));
   ok('sin assets reales el fallback sigue siendo procedural',
     BTP.OriginalAssets.active === false && BTP.ObjMesh.count() === 0);
+  const ssh = src('tools/setup-ssh.sh');
+  ok('script de acceso SSH disponible y válido',
+    fs.existsSync(path.join(ROOT, 'tools/ACCESO-SSH.md')) && ssh.includes('ssh-keygen -t ed25519'));
+  ok('el script NUNCA muestra ni contiene una clave privada',
+    !ssh.includes('BEGIN OPEN' + 'SSH PRIVATE KEY') &&
+    !/cat\s+["']?\$KEY["']?\s*$/m.test(ssh) && ssh.includes('cat "$KEY.pub"'));
+  ok('documentación SSH con URL y rama correctas',
+    fs.readFileSync(path.join(ROOT, 'tools/ACCESO-SSH.md'), 'utf8').includes('arena/8143a957-blak-top-police-chase'));
 }
 
 section('5. Garantía OFFLINE (cero peticiones externas)');

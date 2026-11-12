@@ -171,7 +171,7 @@ En resumen: **el juego completo y todas sus funciones están recreados**, pero l
 
 ## 10. Verificación realizada
 
-- `npm test` → **117 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
+- `npm test` → **120 comprobaciones OK, 0 fallos** (sintaxis, carga de módulos, física vectorial, retícula de caminos, garaje, guardado, idiomas, Modo Original, catálogo desbloqueado, 11 siluetas, spawns delanteros y auditoría de que no hay URLs externas).
 - Chromium headless con WebGL (SwiftShader): menú, partida, conducción, ciclo completo del bucle, persecución al nivel 6 con bloqueos/pinchos/helicóptero, garaje con 21 coches, 4 modos, pantalla dividida, 11 siluetas 3D, 8 tipos de tráfico, spawns de policía con `dot > 0.49` respecto al cono frontal, resultados, `file://` y Service Worker v9 → **0 errores de consola, 0 peticiones fallidas, 0 peticiones a internet**.
 
 ---

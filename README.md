@@ -92,7 +92,7 @@ src/garage.js         21 coches, 12 pinturas, mejoras y desbloqueos
 src/missions.js       misiones, modos, monedas, combos y resultados
 src/ui.js             HUD, minimapa, menús, garaje y controles táctiles
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        117 comprobaciones sin navegador (npm test)
+tests/smoke.js        120 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -101,7 +101,7 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 117 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
+npm test    # 120 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
 ```
 
 También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v9 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
@@ -234,3 +234,25 @@ activo y el juego no se rompe.
 ⚠️ Los assets son de Steelpan Interactive / Poki y este repo es **público**:
 solo se integrarán si llegan con licencia/autorización; si no, hay que usar un
 repo privado.
+
+
+---
+
+## Acceso SSH (para tu propia computadora)
+
+**Aquí no hay claves privadas ni se entregan por chat**: una clave que pasa por
+un mensaje queda comprometida. Ejecuta en tu máquina:
+
+```bash
+bash tools/setup-ssh.sh
+```
+
+El script genera el par ed25519 localmente, **imprime solo la clave pública**
+y te indica dónde pegarla (Settings → SSH and SSH keys, o Deploy keys de este
+repo con *Allow write access*). Guía completa en `tools/ACCESO-SSH.md`.
+
+SSH: `git@github.com:gaboexperimetos-ui/blak--top-police-chase-.git` ·
+Rama: `arena/8143a957-blak-top-police-chase`.
+
+Si lo que buscas es que **otro agente suba archivos**, no necesita SSH: que te
+pase un único `.tar.gz` y adjúntalo al chat; Arena ya tiene permisos de push.
