@@ -176,8 +176,14 @@ if (BTP) {
     !/\bfetch\s*\(/.test(src('src/objmesh.js')));
   ok('makeCar usa el .obj original cuando existe',
     models.includes('BTP.ObjMesh.car(spec)') && src('src/physics.js').includes('asset: spec.name'));
-  ok('sin assets reales el fallback sigue siendo procedural',
-    BTP.OriginalAssets.active === false && BTP.ObjMesh.count() === 0);
+  ok('assets originales cargados (357 modelos .obj reales)',
+    BTP.OriginalAssets.active === true && BTP.ObjMesh.count() === 357,
+    'modelos=' + BTP.ObjMesh.count());
+  ok('los 21 vehiculos del garaje resuelven a un .obj original',
+    BTP.Garage.CARS.every(c => !!BTP.ObjMesh.find(c.name)),
+    BTP.Garage.CARS.filter(c => !BTP.ObjMesh.find(c.name)).map(c => c.name).join(', '));
+  ok('fallback procedural sigue disponible como respaldo',
+    models.includes('M.makeCar') && models.includes('bodyGeometry'));
   const ssh = src('tools/setup-ssh.sh');
   ok('script de acceso SSH disponible y válido',
     fs.existsSync(path.join(ROOT, 'tools/ACCESO-SSH.md')) && ssh.includes('ssh-keygen -t ed25519'));

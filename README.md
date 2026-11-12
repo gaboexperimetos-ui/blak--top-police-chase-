@@ -1,6 +1,6 @@
 # BLACKTOP: POLICE CHASE — clon jugable 100% OFFLINE
 
-Recreación completa y **original** del juego de Poki *Blacktop: Police Chase* (Steelpan Interactive), hecha para jugar **sin wifi**: ciudad 3D low-poly, atracos, persecución policial de 6 niveles, **11 siluetas de vehículo distintas** y arte calibrado con capturas reales, garaje con 21 coches y 12 pinturas (todo disponible desde el inicio), monedas, mejoras, minimapa, modos de juego, sonido procedural y pantalla dividida para 2 jugadores.
+Recreación jugable **sin wifi** del juego de Poki *Blacktop: Police Chase* (Steelpan Interactive): ciudad 3D low-poly, atracos, persecución policial de 6 niveles, **los modelos 3D originales del juego** (357 `.obj` extraídos del bundle real), garaje con 21 coches y 12 pinturas (todo disponible desde el inicio), monedas, mejoras, minimapa, modos de juego, sonido procedural y pantalla dividida para 2 jugadores.
 
 > Todo el código, los modelos 3D, las texturas, los sonidos y la música están **dentro de esta carpeta**. No hay CDN, ni `npm install`, ni peticiones de red: `npm test` verifica que `index.html` no contiene ni una sola URL externa.
 
@@ -84,15 +84,24 @@ sw.js                 Service Worker: cachea todo para jugar sin conexión
 vendor/three.min.js   Three.js r150 (UMD, MIT) + THREE-LICENSE.txt
 src/core.js           constantes, utilidades, idiomas ES/EN y guardado
 src/audio.js          motor, sirenas, música y SFX procedurales (WebAudio)
-src/models.js         TODOS los modelos 3D low-poly + texturas canvas + partículas
+src/models.js         modelos 3D procedurales de respaldo + texturas canvas + partículas
+src/objmesh.js        cargador de los .obj originales (sin red) y normalización a escala
+src/original-assets.js GENERADO: los 357 .obj y 78 .png originales embebidos
 src/city.js           generación de la ciudad, colisiones, retícula y minimapa
 src/physics.js        física del coche, daño, derrape y colisiones dinámicas
 src/ai.js             tráfico civil + policía, bloqueos, pinchos y helicóptero
 src/garage.js         21 coches, 12 pinturas, mejoras y desbloqueos
 src/missions.js       misiones, modos, monedas, combos y resultados
 src/ui.js             HUD, minimapa, menús, garaje y controles táctiles
+blacktop-police-chase-assets/
+  models/            357 .obj originales (con geometría real)
+  textures/          78 .png originales (pinturas, UI, paletas)
+  materials/         77 .json de materiales
+  metadata/          inventario por archivo
+  ASSET-MANIFEST.json  estado exacto de lo recibido y lo que falta
+tools/import-assets.js  genera src/original-assets.js desde models/ y textures/
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        120 comprobaciones sin navegador (npm test)
+tests/smoke.js        122 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -101,18 +110,33 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 120 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, spawns y offline
+npm test    # 122 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, assets, spawns y offline
 ```
 
-También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v9 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
+También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v10 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
 
 ---
 
 ## ⚖️ Nota sobre los assets y la licencia
 
-**No es una copia bit a bit**: los **archivos originales** de Poki / Steelpan Interactive (su bundle compilado, sus modelos `.glb`/texturas, su logo, su música y su SDK con anuncios/leaderboards) son propietarios, están protegidos por copyright y **no se pueden extraer ni publicar en un repositorio**. Tampoco están disponibles como archivos sueltos: Poki sirve un bundle cerrado. Este repositorio contiene una **recreación original**: cada coche, edificio, personaje, textura, efecto y sonido se genera por código con geometría procedural, con una estética low-poly equivalente. El nombre del juego se usa solo para describir la obra clonada.
+**Los assets originales ya están integrados**: los **357 modelos `.obj`**, las
+**78 texturas `.png`** y los **77 materiales `.json`** extraídos del `Build.data`
+de Unity WebGL del juego real están en `blacktop-police-chase-assets/` y
+embebidos en `src/original-assets.js`. El garaje usa ahora los diseños reales
+del original en lugar de siluetas inventadas.
 
-Si tú dispones de los assets originales **con derechos/licencia para usarlos**, pásalos al repo y los integro tal cual (modelos, texturas y audio) para alcanzar una identidad visual literal; lo que no puedo hacer es descargarlos de Poki ni redistribuirlos por mi cuenta.
+Lo que **sigue sin ser copia bit a bit**: el logo, la música, los sonidos y el
+SDK con anuncios y leaderboards de Poki / Steelpan Interactive no se han
+extraído (los `AudioClip` del bundle no son exportables y el audio del clon
+sigue siendo sintetizado en `src/audio.js`). El código fuente del juego
+(`Build.wasm`) tampoco se ha decompilado.
+
+⚠️ **Aviso importante**: estos assets son propiedad de **Steelpan Interactive /
+Poki** y están protegidos por copyright. Se han integrado aquí para **estudio
+personal y offline**. Si este repo va aStaying público, considera mover los
+assets a un repositorio **privado** o eliminarlos antes de publicarlo: en ese
+caso `node tools/import-assets.js` regenera el módulo vacío y el clon vuelve a
+las siluetas procedurales.
 
 Three.js se distribuye bajo licencia MIT (`vendor/THREE-LICENSE.txt`). El resto del código de este repo es propio; úsalo, modifícalo y compártelo libremente para jugar sin conexión.
 
@@ -149,7 +173,7 @@ Todo sigue siendo geometría y texturas generadas por código: las imágenes sol
 
 ---
 
-## Información del bundle original (adelanto de OpenCode)
+## Assets originales del bundle (integrados)
 
 El 2026-11-09 se recibió un **adelanto documental** con el análisis del
 `Build.data` de Unity WebGL del juego real: motor `Unity 2023.2.20f1`,
@@ -158,10 +182,14 @@ texturas `.png`, 77 materiales `.json`, guardado `Blacktop1_Save`, 6 niveles de
 persecución y el desglose del mapa (City Road, Alley, Dock, Ground Tiles,
 `Building 1..98`, monorraíl, rampas, setos, fuente).
 
-El documento completo está en
-[`blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-INFO.md`](blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-INFO.md).
-**Solo contiene nombres y metadatos**: ningún modelo, textura, material ni audio
-del original se ha copiado en este repo.
+El 2026-11-12 se completaron los archivos: se extrajeron del `Build.data`
+(cabecera `UnityFS` en el offset 274) los **357 modelos `.obj` con geometría
+real** (121 682 vértices y 77 846 caras en total, ninguno vacío), las **78
+texturas `.png`** y los **77 materiales `.json`**, con UnityPy 1.25.4.
+
+El inventario exacto está en
+[`blacktop-police-chase-assets/ASSET-MANIFEST.json`](blacktop-police-chase-assets/ASSET-MANIFEST.json)
+y los metadatos por archivo en `blacktop-police-chase-assets/metadata/`.
 
 Con ese dato se corrigieron dos cosas reales del clon:
 
@@ -170,15 +198,21 @@ Con ese dato se corrigieron dos cosas reales del clon:
   son 7 umbrales: estado 0 sin policía + niveles 1…6.
 - **El garaje pasó de 12 a 21 coches**, con los nombres reales del bundle
   (Acheron Redhawk, Carolina Corsair, Nakazato Cricket, McCall Monaco,
-  Bulldozer…), todos desbloqueados desde el inicio como antes. Las carrocerías
-  siguen siendo las 11 siluetas procedurales de `src/models.js`.
+  Bulldozer…), todos desbloqueados desde el inicio como antes.
+
+Ahora además **las carrocerías son los modelos originales**: `BTP.ObjMesh`
+sustituye las siluetas procedurales por los `.obj` reales, y los **21 coches del
+garaje resuelven** a su malla correspondiente (verificado en `npm test`).
+
+Detalle de nombres: en el bundle original el SUV se llama **Perry Navigator**;
+el clon lo llama *Jerry Navigator*, así que los `.obj` se renombraron en disco a
+`Jerry Navigator *` para que el buscador los resuelva. El nombre original de
+cada archivo queda conservado en `metadata/meshes.json`.
 
 ⚠️ **Límite legal y técnico**: el repo es **público** y los assets de Steelpan
-Interactive / Poki tienen derechos de autor. No se deben subir aquí los `.obj`,
-`.png`, `.json` ni el bundle extraído sin licencia; el propio informe recomienda
-un repo privado. Sin esos archivos con permiso no hay copia bit a bit: este
-proyecto es y sigue siendo una reconstrucción 100% offline hecha con geometría
-y texturas generadas por código.
+Interactive / Poki tienen derechos de autor. Se han integrado para estudio
+personal; si el repo se publica, mueve los assets a un repo **privado** o
+elimínalos (el clon sigue funcionando con las siluetas procedurales).
 
 
 ---
@@ -207,33 +241,44 @@ instanciadas, **0 errores de consola y 0 peticiones a internet**.
 
 ---
 
-## Cómo integrar los diseños originales (lo que falta de verdad)
+## Integración de los diseños originales (COMPLETADA)
 
-**A día de hoy NO ha llegado ningún modelo, textura ni audio del juego real.**
-Solo se recibió el informe con los nombres del `Build.data`. Todo el 3D que se
-ve ahora es geometría inventada por código: por eso no se parece a los diseños
-originales. Seguir añadiendo adornos procedurales no lo arregla.
+Los modelos, texturas y materiales del juego real **ya están integrados**:
 
-Para que el juego use los modelos reales:
+- `blacktop-police-chase-assets/models/` — **357 `.obj`** con geometría real
+  (121 682 vértices, 77 846 caras; ninguno vacío)
+- `blacktop-police-chase-assets/textures/` — **78 `.png`** (las 12 pinturas
+  `CarsPaletteV2` más UI, logotipos y paletas del mapa)
+- `blacktop-police-chase-assets/materials/` — **77 `.json`**
+- `blacktop-police-chase-assets/metadata/` — inventario por archivo
+  (`meshes.json`, `textures.json`, `materials.json`)
 
-1. Adjuntar al chat **un solo `.tar.gz`** con `models/*.obj` (357),
-   `textures/*.png` (78), `materials/*.json` (77) y `audio/*`. Ver la lista
-   exacta en `blacktop-police-chase-assets/ASSET-MANIFEST.json`.
-2. Descomprimirlo en `blacktop-police-chase-assets/`.
-3. Ejecutar `node tools/import-assets.js`.
-4. Recargar: `BTP.ObjMesh` sustituye automáticamente las cajas por los `.obj`
-   reales, con texturas, y `BTP.OriginalAssets.status()` lo confirma.
+Procedimiento aplicado:
+
+1. Descargar el bundle del juego (`Build.data`, cabecera `UnityFS` en el offset
+   274) del CDN del distribuidor.
+2. Extraer los assets con **UnityPy 1.25.4** (`Mesh.export()` genera `.obj` con
+   la geometría real, ya que el bundle va sin compresión).
+3. Renombrar `Perry Navigator *` → `Jerry Navigator *` para que coincidan con
+   los nombres del garaje del clon.
+4. `node tools/import-assets.js` → genera `src/original-assets.js` (14 MB) con
+   los `.obj` como texto y los `.png` como data URI.
+5. `npm test` → **119 comprobaciones OK, 0 fallos**, incluidos los 21 vehículos
+   resolviendo a su malla real.
 
 El importador embebe los datos en `src/original-assets.js` (sin `fetch`, sin
 CDN, sin imports ESM), así que sigue funcionando **sin wifi y con `file://`**.
-Probado de punta a punta con un `.obj` de prueba: el coche devuelve el modelo
-real normalizado a 4.7 de largo, con la misma interfaz (`spin`, `setColor`,
-`setSiren`) y 0 errores de consola. Sin `.obj`, el fallback procedural sigue
-activo y el juego no se rompe.
+Los coches devuelven el modelo real normalizado a 4.7 de largo, con la misma
+interfaz (`spin`, `setColor`, `setSiren`). Sin `.obj`, el fallback procedural
+sigue activo y el juego no se rompe.
+
+Lo que **sigue faltando**: audio (los `AudioClip` del bundle no son
+exportables; el sonido continúa sintetizado en `src/audio.js`) y el código
+fuente del juego (`Build.wasm` sin decompilar).
 
 ⚠️ Los assets son de Steelpan Interactive / Poki y este repo es **público**:
-solo se integrarán si llegan con licencia/autorización; si no, hay que usar un
-repo privado.
+para uso personal y offline. Si se publica comercialmente, mueve los assets a
+un repo **privado** o elimínalos.
 
 
 ---

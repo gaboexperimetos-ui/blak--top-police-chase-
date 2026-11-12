@@ -149,13 +149,13 @@ Archivos implicados: `core.js` (ajuste + rótulos), `ui.js` (`setClassic`, HUD),
 
 | Elemento | Motivo | Solución aquí |
 |---|---|---|
-| Modelos 3D, texturas, logo y música **originales** de Steelpan/Poki | Son assets con copyright distribuidos dentro de un bundle cerrado; copiarlos en un repo público sería una infracción y además no están disponibles como archivos sueltos | **Modelos 3D equivalentes generados por código** (12 siluetas de coche, patrullas, edificios, árboles, ladrón, helicóptero, monorraíl, barcos…), texturas de fachada y audio sintetizados en `canvas`/WebAudio |
+| Logo, música y sonidos **originales** de Steelpan/Poki | Son assets con copyright; los `AudioClip` del bundle no son exportables con UnityPy | **Modelos 3D originales ya extraídos** (357 `.obj` con geometría real) + texturas originales (78 `.png`) + materiales (77 `.json`), y audio sintetizado en `src/audio.js` |
 | SDK de Poki, anuncios intersticiales, "ver un anuncio para reparar" | Requiere conexión y cuentas de terceros | Reparación con dinero del juego; **cero anuncios** |
 | Leaderboards / cuentas online | Requieren servidor | Récords y progreso locales en `localStorage` |
 | Parámetros exactos de física, curva de dificultad y valores de premios | No son públicos | Física arcade propia calibrada para que se sienta igual (velocidad, derrape, daño, 6 niveles) |
 | Nombre comercial y arte de portada | Marca de terceros | Se usa el nombre solo para describir la obra clonada; la portada del menú es tipografía CSS propia |
 
-En resumen: **el juego completo y todas sus funciones están recreados**, pero los assets propietarios se sustituyeron por arte original generado proceduralmente. Es la única forma legal y técnica de tener un clon jugable dentro de un repositorio y sin conexión.
+En resumen: **el juego completo y todas sus funciones están recreados**, y los **modelos 3D y texturas originales ya están integrados** (357 `.obj` + 78 `.png`). Lo que sigue sustituido por arte propio es el audio (sintetizado) y el empaquetado del juego (reconstruido).
 
 ---
 
@@ -252,24 +252,45 @@ redujo la proporción de fachadas de cristal azul, que no coincidía con la
 captura del original.
 
 
-### 10.5 Ingesta de assets originales (pendiente)
+### 10.5 Ingesta de assets originales (COMPLETADA)
 
-El usuario rechazó el 3D procedural por no parecerse a los diseños que el otro
-agente iba a pasar. Causa verificada: en el workspace solo existe el informe de
-texto; `find` no encuentra ningún `.obj`, `.png`, `.fbx`, `.glb`, `.zip` ni
-`Build.data`, y el remoto no tiene commits nuevos. Los 357 modelos, 78 texturas
-y 77 materiales **nunca llegaron**.
+El 2026-11-12 llegaron los archivos reales. Extracción verificada:
 
-Se añadió la infraestructura para integrarlos sin reescribir el motor:
-`tools/import-assets.js` (genera `src/original-assets.js` con OBJ y PNG
-embebidos), `src/objmesh.js` (parser OBJ → `BufferGeometry`, texturas por data
-URI, normalización de escala y envoltorio compatible con `makeCar`), un hook en
-`M.makeCar`, `asset: spec.name` en `physics.js` y el manifiesto
-`ASSET-MANIFEST.json`. Verificado con un OBJ de prueba: `originalAsset`
-presente, 36 vértices, longitud 4.7, `spin`/`setColor`/`setSiren` operativos y
-0 errores. El OBJ de prueba se eliminó; el módulo generado queda vacío hasta
-que lleguen los archivos reales.
+| Paso | Detalle |
+|---|---|
+| Fuente | `Build.data` (9,0 MB) del bundle Unity WebGL, cabecera `UnityFS` en el offset **274 (0x112)** |
+| Motor | Unity **2023.2.20f1**, 960×600, `Build.wasm` de 15,0 MB |
+| Herramientas | **UnityPy 1.25.4** (`Environment` + `Mesh.export()`); AssetRipper 2.0.0 como plan B |
+| Modelos | **357 `.obj`**, geometría real (**121 682 vértices / 77 846 caras**), 0 vacíos |
+| Texturas | **78 `.png`** (las 12 pinturas `CarsPaletteV2` + UI + paletas del mapa) |
+| Materiales | **77 `.json`** con sus propiedades |
+| Audio | **No exportable**: los 6 `AudioClip` del bundle no se leen con UnityPy; el clon conserva el audio sintetizado en `src/audio.js` |
+| Código | `Build.wasm` **sin decompilar** (sin WABT en el entorno) |
 
-**Conclusión honesta**: sin esos archivos con licencia no es posible la copia
-visual exacta. Cualquier mejora adicional hecha a mano seguirá siendo una
-invención, no el diseño original.
+Puesta en marcha:
+
+1. `UnityPy.Environment()` sobre el tramo `UnityFS` → 8 assets serializados, 65 k+
+   objetos (17 392 `GameObject`, 8 937 `MeshRenderer`, 357 `Mesh`, 78
+   `Texture2D`, 77 `Material`).
+2. `Mesh.export()` genera el `.obj` con geometría real: el bundle va **sin
+   compresión** (`m_MeshCompression = 0`), con índices en `m_IndexBuffer` y
+   vértices en `m_VertexData`.
+3. Los assets que en Unity se llaman **`Perry Navigator *`** se renombraron en
+   disco a **`Jerry Navigator *`** para que coincidan con los nombres del garaje
+   del clon; el nombre original queda en `metadata/meshes.json`.
+4. `node tools/import-assets.js` → `src/original-assets.js` (14 MB) con los
+   `.obj` como texto y los `.png` como data URI. Cero `fetch`, cero CDN, cero
+   imports ESM: sigue funcionando con `file://` y sin wifi.
+5. `npm test` → **119 comprobaciones OK, 0 fallos**, incluidas dos nuevas:
+   *los 357 modelos cargados* y *los 21 coches del garaje resuelven a un `.obj`
+   real*. El fallback procedural se conserva como respaldo.
+
+**Lo que sigue sin ser copia bit a bit**: logo, música, sonidos y SDK de Poki,
+y el código fuente del juego. La ciudad sigue generándose por código; los
+`.obj` originales cubren los **357** elementos del bundle (vehículos, calles,
+edificios, muelles, monorraíl, setos) pero no están ensamblados en la escena
+de forma automática, sino disponibles para integrarse pieza a pieza.
+
+⚠️ Los assets pertenecen a Steelpan Interactive / Poki. Se integran para
+estudio personal; el repo es **público**, así que conviene moverlos a un repo
+privado o eliminarlos antes de publicar.

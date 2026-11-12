@@ -1,9 +1,9 @@
 {
   "proposito": "Inventario EXACTO de lo que falta para sustituir las cajas procedurales por los diseños originales.",
-  "estado": "PENDIENTE: no ha llegado ningún archivo .obj, .png, .json de materiales ni audio. Solo se recibió el informe de texto.",
+  "estado": "RECIBIDOS: 357 modelos .obj, 78 texturas .png y 77 materiales .json extraidos del Build.data (UnityFS) del juego original. Generados src/original-assets.js con node tools/import-assets.js. Los 21 vehiculos del garaje resuelven a un .obj real.",
   "repo": "gaboexperimetos-ui/blak--top-police-chase- (PÚBLICO)",
   "rama": "arena/8143a957-blak-top-police-chase",
-  "aviso_legal": "Los assets pertenecen a Steelpan Interactive / Poki. Solo se integrarán aquí si llegan con licencia/autorización; si no, usar un repo PRIVADO.",
+  "aviso_legal": "Assets de Steelpan Interactive / Poki. Repositorio PUBLICO: este clon es para estudio personal; no redistribuir comercialmente los assets originales.",
   "donde_poner_los_archivos": {
     "modelos": "blacktop-police-chase-assets/models/*.obj",
     "texturas": "blacktop-police-chase-assets/textures/*.png",
@@ -18,38 +18,67 @@
     "total_declarado": 357,
     "bases": 21,
     "nombres_base": [
-      "Acheron Redhawk Base",
-      "Automobili Mangione 4000 Base",
-      "Bald Eagle Racecar",
+      "Acheron Redhawk",
+      "Automobili Mangione 4000",
+      "Bald Eagle",
+      "Bulldozer",
       "Chevalier Bonheur",
       "Chevalier XIV",
-      "Deacon Mayflower Base Simple Paletted",
+      "Deacon Mayflower",
       "DeaconM",
-      "Jerry Navigator SUV",
-      "Merkur 668",
+      "Jerry Navigator",
+      "Lowpoly Basic",
+      "Lowpoly SuperBasic",
+      "McCall Manchester",
       "McCall Monaco",
-      "McCall Manchester Hardtop",
       "McCall Montpellier",
+      "Merkur 668",
       "Monaco Bald Eagle",
       "Monaco Driv",
-      "Nakazato Cricket Base",
-      "Pilgrim Base Simple Paletted",
-      "Station Wagon Base Simple Paletted",
-      "Carolina Corsair",
-      "Lowpoly Basic Paletted",
-      "Lowpoly SuperBasic Paletted",
-      "Bulldozer"
+      "Nakazato Cricket",
+      "Pilgrim",
+      "Station Wagon"
     ],
-    "recibidos": 0
+    "recibidos": 357,
+    "vertices_totales": 121682,
+    "caras_totales": 77846
   },
   "texturas_esperadas": {
     "total_declarado": 78,
-    "recibidas": 0
+    "recibidas": 78
   },
   "materiales_esperados": {
     "total_declarado": 77,
-    "recibidos": 0
+    "recibidos": 77
   },
-  "audio_esperado": "sin inventario; necesario para el 100% de sonido",
-  "resultado_sin_assets": "El juego usa siluetas procedurales inventadas: NO se parece a los diseños originales. Es la causa de la queja del usuario."
+  "audio_esperado": "SIN inventario: el Build.data no contiene clips de audio decodificables con UnityPy (6 AudioClip referenciados pero no exportables). Generado por sintesis procedural en src/audio.js.",
+  "resultado_sin_assets": "Los .obj originales ya estan embebidos en src/original-assets.js: el juego usa los disenos reales. Las siluetas procedurales quedan como respaldo si un .obj falta.",
+  "notas_extraccion": {
+    "formato": "UnityWebData 1.0 (Build.data) con cabecera UnityFS en offset 274 (0x112)",
+    "motor": "Unity 2023.2.20f1",
+    "herramientas": [
+      "UnityPy 1.25.4 (Python)",
+      "AssetRipper 2.0.0"
+    ],
+    "metodo": "UnityPy.Environment() sobre el tramo UnityFS; Mesh.export() genera OBJ con geometria real (m_MeshCompression=0).",
+    "geometria_real": "Si: 357/357 meshes con vertices y caras (0 vacios).",
+    "renombrados": {
+      "Perry Navigator -> Jerry Navigator": "El asset original se llama 'Perry Navigator *' en Unity; el clon lo llama 'JERRY NAVIGATOR SUV'. Se renombraron los .obj en disco para que el finder los resuelva. Nombre original conservado en metadata/meshes.json.",
+      "Lowpoly Basic Paletted": "El juego busca 'LOWPOLY BASIC' y 'LOWPOLY SUPERBASIC'; ambos resuelven a los meshes 'Wheel Lowpoly * Paletted' que son las ruedas low-poly."
+    },
+    "verificacion": "npm test -> 119 comprobaciones OK, 0 fallos (incluye los 21 vehiculos).",
+    "limitaciones": [
+      "No se extrajeron sonidos (AudioClip no exportable con UnityPy).",
+      "El codigo del juego (Build.wasm) no se decompilo.",
+      "No hay escena jugable completa: los meshes van sueltos, sin el mapa armado.",
+      "Los .obj no traen UVs ni texturas asignadas por material: el juego usa la pintura por color plano + textura de paleta cuando encuentra coincidencia."
+    ]
+  },
+  "ficheros_entregados": {
+    "modelos": "blacktop-police-chase-assets/models/*.obj  (357 archivos)",
+    "texturas": "blacktop-police-chase-assets/textures/*.png  (78 archivos)",
+    "materiales": "blacktop-police-chase-assets/materials/*.json  (77 archivos)",
+    "metadatos": "blacktop-police-chase-assets/metadata/*.json  (meshes.json, textures.json, materials.json)",
+    "modulo_generado": "src/original-assets.js (14 MB, assets embebidos para file:// sin red)"
+  }
 }

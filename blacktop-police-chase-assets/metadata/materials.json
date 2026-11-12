@@ -1,0 +1,541 @@
+[
+  {
+    "id": 2,
+    "nombre": "Sprites-Default",
+    "key": "Sprites-Default",
+    "archivo": "Sprites-Default.json",
+    "shader": null
+  },
+  {
+    "id": 2,
+    "nombre": "YRDZST Semibold SDF Material",
+    "key": "YRDZST Semibold SDF Material",
+    "archivo": "YRDZST Semibold SDF Material.json",
+    "shader": null
+  },
+  {
+    "id": 3,
+    "nombre": "Default-Material",
+    "key": "Default-Material",
+    "archivo": "Default-Material.json",
+    "shader": null
+  },
+  {
+    "id": 4,
+    "nombre": "Subway-Black Clean",
+    "key": "Subway-Black Clean",
+    "archivo": "Subway-Black Clean.json",
+    "shader": null
+  },
+  {
+    "id": 5,
+    "nombre": "Subway-Black DarkShadow",
+    "key": "Subway-Black DarkShadow",
+    "archivo": "Subway-Black DarkShadow.json",
+    "shader": null
+  },
+  {
+    "id": 6,
+    "nombre": "Subway-Black Outline",
+    "key": "Subway-Black Outline",
+    "archivo": "Subway-Black Outline.json",
+    "shader": null
+  },
+  {
+    "id": 7,
+    "nombre": "Subway-Black Outline2",
+    "key": "Subway-Black Outline2",
+    "archivo": "Subway-Black Outline2.json",
+    "shader": null
+  },
+  {
+    "id": 8,
+    "nombre": "Subway-Black SmallShadow",
+    "key": "Subway-Black SmallShadow",
+    "archivo": "Subway-Black SmallShadow.json",
+    "shader": null
+  },
+  {
+    "id": 9,
+    "nombre": "Bank Robber Cylinder",
+    "key": "Bank Robber Cylinder",
+    "archivo": "Bank Robber Cylinder.json",
+    "shader": null
+  },
+  {
+    "id": 10,
+    "nombre": "Hideout Cylinder House",
+    "key": "Hideout Cylinder House",
+    "archivo": "Hideout Cylinder House.json",
+    "shader": null
+  },
+  {
+    "id": 11,
+    "nombre": "Hideout Cylinder",
+    "key": "Hideout Cylinder",
+    "archivo": "Hideout Cylinder.json",
+    "shader": null
+  },
+  {
+    "id": 12,
+    "nombre": "Indicator_Enemy",
+    "key": "Indicator_Enemy",
+    "archivo": "Indicator_Enemy.json",
+    "shader": null
+  },
+  {
+    "id": 13,
+    "nombre": "Indicator_House",
+    "key": "Indicator_House",
+    "archivo": "Indicator_House.json",
+    "shader": null
+  },
+  {
+    "id": 14,
+    "nombre": "Indicator_Robber",
+    "key": "Indicator_Robber",
+    "archivo": "Indicator_Robber.json",
+    "shader": null
+  },
+  {
+    "id": 15,
+    "nombre": "Indicator_Target",
+    "key": "Indicator_Target",
+    "archivo": "Indicator_Target.json",
+    "shader": null
+  },
+  {
+    "id": 16,
+    "nombre": "Blue",
+    "key": "Blue",
+    "archivo": "Blue.json",
+    "shader": null
+  },
+  {
+    "id": 17,
+    "nombre": "Debug_HitPlane",
+    "key": "Debug_HitPlane",
+    "archivo": "Debug_HitPlane.json",
+    "shader": null
+  },
+  {
+    "id": 18,
+    "nombre": "Green Bright",
+    "key": "Green Bright",
+    "archivo": "Green Bright.json",
+    "shader": null
+  },
+  {
+    "id": 19,
+    "nombre": "Green",
+    "key": "Green",
+    "archivo": "Green.json",
+    "shader": null
+  },
+  {
+    "id": 20,
+    "nombre": "GreenScreen",
+    "key": "GreenScreen",
+    "archivo": "GreenScreen.json",
+    "shader": null
+  },
+  {
+    "id": 21,
+    "nombre": "Light Blue",
+    "key": "Light Blue",
+    "archivo": "Light Blue.json",
+    "shader": null
+  },
+  {
+    "id": 22,
+    "nombre": "Orange",
+    "key": "Orange",
+    "archivo": "Orange.json",
+    "shader": null
+  },
+  {
+    "id": 23,
+    "nombre": "Red",
+    "key": "Red",
+    "archivo": "Red.json",
+    "shader": null
+  },
+  {
+    "id": 24,
+    "nombre": "Warm Yellow",
+    "key": "Warm Yellow",
+    "archivo": "Warm Yellow.json",
+    "shader": null
+  },
+  {
+    "id": 25,
+    "nombre": "White",
+    "key": "White",
+    "archivo": "White.json",
+    "shader": null
+  },
+  {
+    "id": 26,
+    "nombre": "_Coin",
+    "key": "_Coin",
+    "archivo": "_Coin.json",
+    "shader": null
+  },
+  {
+    "id": 27,
+    "nombre": "_CoinGreen",
+    "key": "_CoinGreen",
+    "archivo": "_CoinGreen.json",
+    "shader": null
+  },
+  {
+    "id": 28,
+    "nombre": "_CoinRed",
+    "key": "_CoinRed",
+    "archivo": "_CoinRed.json",
+    "shader": null
+  },
+  {
+    "id": 29,
+    "nombre": "Car - Palette - General Jacques",
+    "key": "Car - Palette - General Jacques",
+    "archivo": "Car - Palette - General Jacques.json",
+    "shader": null
+  },
+  {
+    "id": 30,
+    "nombre": "Car - Palette - Racecar",
+    "key": "Car - Palette - Racecar",
+    "archivo": "Car - Palette - Racecar.json",
+    "shader": null
+  },
+  {
+    "id": 31,
+    "nombre": "Car - Palette Beige",
+    "key": "Car - Palette Beige",
+    "archivo": "Car - Palette Beige.json",
+    "shader": null
+  },
+  {
+    "id": 32,
+    "nombre": "Car - Palette Black Yellow",
+    "key": "Car - Palette Black Yellow",
+    "archivo": "Car - Palette Black Yellow.json",
+    "shader": null
+  },
+  {
+    "id": 33,
+    "nombre": "Car - Palette Blue",
+    "key": "Car - Palette Blue",
+    "archivo": "Car - Palette Blue.json",
+    "shader": null
+  },
+  {
+    "id": 34,
+    "nombre": "Car - Palette Brown Beige",
+    "key": "Car - Palette Brown Beige",
+    "archivo": "Car - Palette Brown Beige.json",
+    "shader": null
+  },
+  {
+    "id": 35,
+    "nombre": "Car - Palette Brown",
+    "key": "Car - Palette Brown",
+    "archivo": "Car - Palette Brown.json",
+    "shader": null
+  },
+  {
+    "id": 36,
+    "nombre": "Car - Palette Chief",
+    "key": "Car - Palette Chief",
+    "archivo": "Car - Palette Chief.json",
+    "shader": null
+  },
+  {
+    "id": 37,
+    "nombre": "Car - Palette Dark Red Black",
+    "key": "Car - Palette Dark Red Black",
+    "archivo": "Car - Palette Dark Red Black.json",
+    "shader": null
+  },
+  {
+    "id": 38,
+    "nombre": "Car - Palette Driving School",
+    "key": "Car - Palette Driving School",
+    "archivo": "Car - Palette Driving School.json",
+    "shader": null
+  },
+  {
+    "id": 39,
+    "nombre": "Car - Palette Gold",
+    "key": "Car - Palette Gold",
+    "archivo": "Car - Palette Gold.json",
+    "shader": null
+  },
+  {
+    "id": 40,
+    "nombre": "Car - Palette Green",
+    "key": "Car - Palette Green",
+    "archivo": "Car - Palette Green.json",
+    "shader": null
+  },
+  {
+    "id": 41,
+    "nombre": "Car - Palette Hearse",
+    "key": "Car - Palette Hearse",
+    "archivo": "Car - Palette Hearse.json",
+    "shader": null
+  },
+  {
+    "id": 42,
+    "nombre": "Car - Palette Medivac",
+    "key": "Car - Palette Medivac",
+    "archivo": "Car - Palette Medivac.json",
+    "shader": null
+  },
+  {
+    "id": 43,
+    "nombre": "Car - Palette Park Ranger",
+    "key": "Car - Palette Park Ranger",
+    "archivo": "Car - Palette Park Ranger.json",
+    "shader": null
+  },
+  {
+    "id": 44,
+    "nombre": "Car - Palette Pink",
+    "key": "Car - Palette Pink",
+    "archivo": "Car - Palette Pink.json",
+    "shader": null
+  },
+  {
+    "id": 45,
+    "nombre": "Car - Palette Police - Black White",
+    "key": "Car - Palette Police - Black White",
+    "archivo": "Car - Palette Police - Black White.json",
+    "shader": null
+  },
+  {
+    "id": 46,
+    "nombre": "Car - Palette Police - Blue White",
+    "key": "Car - Palette Police - Blue White",
+    "archivo": "Car - Palette Police - Blue White.json",
+    "shader": null
+  },
+  {
+    "id": 47,
+    "nombre": "Car - Palette Police - DutchGer",
+    "key": "Car - Palette Police - DutchGer",
+    "archivo": "Car - Palette Police - DutchGer.json",
+    "shader": null
+  },
+  {
+    "id": 48,
+    "nombre": "Car - Palette Police - Gendarmerie",
+    "key": "Car - Palette Police - Gendarmerie",
+    "archivo": "Car - Palette Police - Gendarmerie.json",
+    "shader": null
+  },
+  {
+    "id": 49,
+    "nombre": "Car - Palette Police - State",
+    "key": "Car - Palette Police - State",
+    "archivo": "Car - Palette Police - State.json",
+    "shader": null
+  },
+  {
+    "id": 50,
+    "nombre": "Car - Palette Purple",
+    "key": "Car - Palette Purple",
+    "archivo": "Car - Palette Purple.json",
+    "shader": null
+  },
+  {
+    "id": 51,
+    "nombre": "Car - Palette Red",
+    "key": "Car - Palette Red",
+    "archivo": "Car - Palette Red.json",
+    "shader": null
+  },
+  {
+    "id": 52,
+    "nombre": "Car - Palette Taxi",
+    "key": "Car - Palette Taxi",
+    "archivo": "Car - Palette Taxi.json",
+    "shader": null
+  },
+  {
+    "id": 53,
+    "nombre": "Car - Palette Turquoise",
+    "key": "Car - Palette Turquoise",
+    "archivo": "Car - Palette Turquoise.json",
+    "shader": null
+  },
+  {
+    "id": 54,
+    "nombre": "Car - Palette White Light Blue",
+    "key": "Car - Palette White Light Blue",
+    "archivo": "Car - Palette White Light Blue.json",
+    "shader": null
+  },
+  {
+    "id": 55,
+    "nombre": "Car - Palette White",
+    "key": "Car - Palette White",
+    "archivo": "Car - Palette White.json",
+    "shader": null
+  },
+  {
+    "id": 56,
+    "nombre": "Car - Palette Yellow Orange",
+    "key": "Car - Palette Yellow Orange",
+    "archivo": "Car - Palette Yellow Orange.json",
+    "shader": null
+  },
+  {
+    "id": 57,
+    "nombre": "Car - Palette Yellow",
+    "key": "Car - Palette Yellow",
+    "archivo": "Car - Palette Yellow.json",
+    "shader": null
+  },
+  {
+    "id": 58,
+    "nombre": "Mischief - Hood Eagle",
+    "key": "Mischief - Hood Eagle",
+    "archivo": "Mischief - Hood Eagle.json",
+    "shader": null
+  },
+  {
+    "id": 59,
+    "nombre": "Mischief - Hood Flamingo",
+    "key": "Mischief - Hood Flamingo",
+    "archivo": "Mischief - Hood Flamingo.json",
+    "shader": null
+  },
+  {
+    "id": 60,
+    "nombre": "Mischief - Hood Phoenix",
+    "key": "Mischief - Hood Phoenix",
+    "archivo": "Mischief - Hood Phoenix.json",
+    "shader": null
+  },
+  {
+    "id": 61,
+    "nombre": "Mischief - Hood Scorpion",
+    "key": "Mischief - Hood Scorpion",
+    "archivo": "Mischief - Hood Scorpion.json",
+    "shader": null
+  },
+  {
+    "id": 62,
+    "nombre": "_Car - Palette Template",
+    "key": "_Car - Palette Template",
+    "archivo": "_Car - Palette Template.json",
+    "shader": null
+  },
+  {
+    "id": 63,
+    "nombre": "Guy_Robber",
+    "key": "Guy_Robber",
+    "archivo": "Guy_Robber.json",
+    "shader": null
+  },
+  {
+    "id": 64,
+    "nombre": "_Building",
+    "key": "_Building",
+    "archivo": "_Building.json",
+    "shader": null
+  },
+  {
+    "id": 65,
+    "nombre": "_Road - Desert",
+    "key": "_Road - Desert",
+    "archivo": "_Road - Desert.json",
+    "shader": null
+  },
+  {
+    "id": 66,
+    "nombre": "_Road - Palette Template",
+    "key": "_Road - Palette Template",
+    "archivo": "_Road - Palette Template.json",
+    "shader": null
+  },
+  {
+    "id": 67,
+    "nombre": "_Roof Deco - Learner",
+    "key": "_Roof Deco - Learner",
+    "archivo": "_Roof Deco - Learner.json",
+    "shader": null
+  },
+  {
+    "id": 68,
+    "nombre": "_Trees",
+    "key": "_Trees",
+    "archivo": "_Trees.json",
+    "shader": null
+  },
+  {
+    "id": 69,
+    "nombre": "_Water",
+    "key": "_Water",
+    "archivo": "_Water.json",
+    "shader": null
+  },
+  {
+    "id": 70,
+    "nombre": "_Wheel",
+    "key": "_Wheel",
+    "archivo": "_Wheel.json",
+    "shader": null
+  },
+  {
+    "id": 71,
+    "nombre": "Smoke Particle",
+    "key": "Smoke Particle",
+    "archivo": "Smoke Particle.json",
+    "shader": null
+  },
+  {
+    "id": 72,
+    "nombre": "2_Midday_2",
+    "key": "2_Midday_2",
+    "archivo": "2_Midday_2.json",
+    "shader": null
+  },
+  {
+    "id": 73,
+    "nombre": "Subway-Black SDF Material",
+    "key": "Subway-Black SDF Material",
+    "archivo": "Subway-Black SDF Material.json",
+    "shader": null
+  },
+  {
+    "id": 74,
+    "nombre": "MochiyPopOne-Regular SDF Material",
+    "key": "MochiyPopOne-Regular SDF Material",
+    "archivo": "MochiyPopOne-Regular SDF Material.json",
+    "shader": null
+  },
+  {
+    "id": 75,
+    "nombre": "_BodyMedivac",
+    "key": "_BodyMedivac",
+    "archivo": "_BodyMedivac.json",
+    "shader": null
+  },
+  {
+    "id": 2,
+    "nombre": "Gradients2",
+    "key": "Gradients2",
+    "archivo": "Gradients2.json",
+    "shader": null
+  },
+  {
+    "id": 1,
+    "nombre": "TextMeshPro/Sprite",
+    "key": "TextMeshProSprite",
+    "archivo": "TextMeshProSprite.json",
+    "shader": null
+  }
+]
