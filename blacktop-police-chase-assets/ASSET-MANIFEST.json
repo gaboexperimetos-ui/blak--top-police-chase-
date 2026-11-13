@@ -69,14 +69,16 @@
       "Lowpoly Basic / Lowpoly SuperBasic": "CORREGIDO: en el bundle no hay coches 'Lowpoly *', solo las 4 ruedas 'Wheel Lowpoly * Paletted'. El clon los usaba como si fueran coches y acaba renderizando una rueda estirada. Se sustituyeron por los dos coches reales que faltaban en el catalogo: 'McCall Miami' y 'Verhoeven Piranha V8'.",
       "DEACONM": "El bundle no tiene 'DeaconM': los nombres reales son 'Deacon Grommit' y 'Deacon Mayflower Base Simple Paletted'. El clon lo renombro a DEACON GROMMIT."
     },
-    "verificacion": "npm test -> 124 comprobaciones OK, 0 fallos (incluye: 357 modelos cargados, 21 assets exactos y unicos, resolucion por nombre y por asset).",
+    "verificacion": "npm test -> 127 comprobaciones OK, 0 fallos. Medidas reales con Three.js r150: Acheron Redhawk 1.80 x 0.93 x 4.70, McCall Manchester Police 1.95 x 1.15 x 5.26, Bulldozer Police 2.34 x 1.85 x 5.26, Nakazato Cricket Taxi 2.08 x 1.09 x 4.93.",
     "limitaciones": [
       "No se extrajeron sonidos (AudioClip no exportable con UnityPy).",
       "El codigo del juego (Build.wasm) no se decompilo.",
       "No hay escena jugable completa: los meshes van sueltos, sin el mapa armado.",
       "Los .obj no traen UVs ni texturas asignadas por material: el juego usa la pintura por color plano + la textura de paleta cuando encuentra coincidencia."
     ],
-    "mapeo_garaje": "src/garage.js declara ahora un campo 'asset' explicito por coche (ya soportado por physics.js: 'asset: spec.name || spec.asset'), con lo que la resolucion es exacta y no depende del matching por texto. Los 21 resuelven a 21 meshes distintos."
+    "mapeo_garaje": "src/garage.js declara ahora un campo 'asset' explicito por coche (ya soportado por physics.js: 'asset: spec.name || spec.asset'), con lo que la resolucion es exacta y no depende del matching por texto. Los 21 resuelven a 21 meshes distintos.",
+    "orientacion_ejes": "AVISO IMPORTANTE: Unity exporta las mallas con Y = largo y Z = alto (X = ancho). El juego trabaja con X = ancho, Y = alto, Z = largo. src/objmesh.js intercambia Y y Z al cargar: (x, y, z) -> (x, z, y). Sin ese cambio los coches miden 5.26 de ALTO y 1 de largo. Los .obj del repo se conservan byte a byte como los exporta Unity; la correccion de ejes vive en el cargador.",
+    "integrado_en_el_juego": "src/ai.js usa ya las mallas originales: trafico civil (22 chassis con sus liberias), patrullas por nivel de persecucion (10 liberies de policia, de Manchester a State Trooper) y la unidad blindada 'Bulldozer Police' para las unidades especiales a partir del nivel 4. Cada librea se pinta con su textura CarsPaletteV2 correspondiente mediante el campo 'paintTexture'."
   },
   "ficheros_entregados": {
     "modelos": "blacktop-police-chase-assets/models/*.obj  (357 archivos)",
@@ -84,5 +86,16 @@
     "materiales": "blacktop-police-chase-assets/materials/*.json  (77 archivos)",
     "metadatos": "blacktop-police-chase-assets/metadata/*.json  (meshes.json, textures.json, materials.json)",
     "modulo_generado": "src/original-assets.js (14 MB, assets embebidos para file:// sin red)"
+  },
+  "mapa_integrado": {
+    "estado": "PENDIENTE (documentado, no integrado)",
+    "piezas_de_calle": "City Road - Straight / Corner 1x1 / Corner 2x2 / Corner Grass 1x1 / Corner Grass 2x2 / Crossroads Small / Crossroads Small 1 Grass / Crossroads Small w Grass / Crossroads With Alley / T-Piece Small / T-Piece w Grass / Straight Grass Full / Straight Grass Half / Straight To Alley Crossroad / Straight To Alley T-Piece / Straight To Straight w Grass / Straight With Grass / Bump / Bump Bridge / Bump Collider / Dock Corner Inside 2x2 / Dock Corner Outside 2x2",
+    "calliejones": "Alley - Straight / Crossroads / Corner 1x1 / T-Piece y los muros Alleywall 3 Long 7, 4 Long 1..7, 6 Long 2..9",
+    "muelles": "Dock Straight / Dock Straight 3L / Dock Straight Wall Full / Dock Straight Wall Half 1-2 / Dock Corner Inside / Dock Corner Outside / Dock Corner Outside 2x2 Wall Full-Half / Dock Corner Outside Wall / Dock Block / Dock Block - Collider",
+    "suelo": "Ground Tile 1x1, 1x2, 2x2, 2x3, 3x3 con variantes Grass, Parkpath, Mixed, Raised Grass y Raised Park; Tile Collider 1x1..3x3 y sus piezas",
+    "edificios": "Building 1 a Building 98 mas las variantes Skyscraper, Riverside y Oldblock, Building Filler 1-6 y Building Monorail Station",
+    "monorrail": "Monorail Front / Middle / Rear / Straight / Straight 3x Support / Straight Support / Corner 1x1 / Corner 2x2",
+    "otros": "Alleywall, Ramp, Double Ramp, Fountain, Statue Pedestal Generic, Hedge Straight / Corner / Edge / Half / Gate, Tree - Pine 2, Tree - Regular, Flag, Arrow, ArrowShort, Gibson Step-Up, House Icon, Learner Sign, Target Cylinder",
+    "como_integrarlo": "El original genera el mapa por CHUNKS (ChunkGenerator + Roadpiece): cada pieza se coloca en una cuadricula y el conjunto se puede instanciar con THREE.InstancedMesh a partir de la geometria cargada con BTP.ObjMesh. Las medidas de las piezas estan en metadata/meshes.json (vertices) y se pueden deducir del bbox crudo: X = ancho, Y = largo, Z = alto (ver orientacion_ejes)."
   }
 }

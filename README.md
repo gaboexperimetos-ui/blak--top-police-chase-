@@ -74,6 +74,58 @@ Se puede desactivar en **Ajustes → MODO ORIGINAL (POKI)**: al desactivarlo vue
 
 ---
 
+---
+
+## Policia y tráfico con las mallas originales
+
+Además de los 21 coches del garaje, `src/ai.js` ya usa las mallas reales del
+bundle para el resto de la circulación:
+
+- **Tráfico civil:** 22 chasis reales con sus liberias (taxis incluidos).
+- **Patrullas por nivel de persecución** (1→6), con las liberias que trae el
+  bundle: `McCall Manchester Police`, `McCall Monaco State Police`,
+  `McCall Montpellier Gendarmerie`, `Chevalier Bonheur Gendarmerie`,
+  `Jerry Navigator Police`, `Merkur 668 Polizei`, `Merkur 668 Rijkspolitie`,
+  `Nakazato Cricket State Trooper`, `Acheron Redhawk Police`.
+- **Unidades blindadas** desde el nivel 4: `Bulldozer Police`.
+- **Pintura real:** cada librea usa su textura `CarsPaletteV2` (campo
+  `paintTexture`), no color plano.
+
+### ⚠️ Orientación de los ejes (bug corregido)
+
+Unity exporta estas mallas con **Y = largo** y **Z = alto** (X = ancho). El
+motor del clon trabaja con **X = ancho, Y = alto, Z = largo**, así que
+`src/objmesh.js` intercambia Y y Z al cargar: `(x, y, z) -> (x, z, y)`.
+Sin ese cambio un coche medía **4.95 de alto y 0.99 de largo**.
+
+Los `.obj` del repo se conservan **byte a byte** como los exporta Unity; la
+corrección de ejes vive en el cargador.
+
+Medidas reales con Three.js r150 tras la corrección:
+
+| Modelo | Ancho | Alto | Largo |
+|--------|-------|------|-------|
+| Acheron Redhawk Base | 1.80 | 0.93 | 4.70 |
+| McCall Manchester Police | 1.95 | 1.15 | 5.26 |
+| Bulldozer Police (blindada) | 2.34 | 1.85 | 5.26 |
+| Nakazato Cricket Taxi | 2.08 | 1.09 | 4.93 |
+
+---
+
+## Documento maestro de la extracción
+
+Toda la información extraída del bundle —arquitectura con las **98 clases C#
+propias del juego**, los 21 coches, la policía, las 100+ piezas de mapa, las 12
+pinturas, los 77 materiales, el sistema de progresión y los controles— está en
+**[`blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-MAESTRO.md`](blacktop-police-chase-assets/BLACKTOP-POLICE-CHASE-MAESTRO.md)**.
+
+Ahí también se documenta **cómo integrar el mapa original** (las 100+ piezas de
+calle, callejón, muelle, suelo, edificio y monorraíl están extraídas y
+listadas; falta montarlas por chunks como hace el original con
+`ChunkGenerator` + `Roadpiece`).
+
+---
+
 ## 📁 Estructura
 
 ```
@@ -99,9 +151,10 @@ blacktop-police-chase-assets/
   materials/         77 .json de materiales
   metadata/          inventario por archivo
   ASSET-MANIFEST.json  estado exacto de lo recibido y lo que falta
+  BLACKTOP-POLICE-CHASE-MAESTRO.md  informe maestro de la extracción
 tools/import-assets.js  genera src/original-assets.js desde models/ y textures/
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        124 comprobaciones sin navegador (npm test)
+tests/smoke.js        127 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -110,7 +163,7 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 124 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, assets, spawns y offline
+npm test    # 127 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, assets, spawns y offline
 ```
 
 También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v10 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
@@ -267,7 +320,7 @@ Procedimiento aplicado:
    los nombres del garaje del clon.
 4. `node tools/import-assets.js` → genera `src/original-assets.js` (14 MB) con
    los `.obj` como texto y los `.png` como data URI.
-5. `npm test` → **124 comprobaciones OK, 0 fallos**, incluidos los 21 vehículos
+5. `npm test` → **127 comprobaciones OK, 0 fallos**, incluidos los 21 vehículos
    resolviendo a su malla real (y de forma **exacta y única**, con un campo
    `asset` explícito por coche).
 

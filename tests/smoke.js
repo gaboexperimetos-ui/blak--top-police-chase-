@@ -183,6 +183,24 @@ if (BTP) {
   ok('los 21 vehiculos del garaje resuelven a un .obj original',
     BTP.Garage.CARS.every(c => !!BTP.ObjMesh.find(c.name)),
     BTP.Garage.CARS.filter(c => !BTP.ObjMesh.find(c.name)).map(c => c.name).join(', '));
+  ok('los .obj se orientan bien (Y=alto, Z=largo) al cargarlos',
+    src('src/objmesh.js').includes('positions.push([+parts[1], +parts[3], +parts[2]])'));
+  ok('la IA de trafico y policia usa assets originales del bundle',
+    ai.includes('TRAFFIC_ASSETS') && ai.includes('POLICE_LIVERIES') &&
+    ai.includes('paintTexture') && ai.includes("asset: asset"));
+  ok('todos los assets de trafico/policia existen en el bundle',
+    (function () {
+      var re = /asset: '([^']+)'/g, m, bad = [];
+      while ((m = re.exec(ai))) if (!BTP.ObjMesh.find(m[1])) bad.push(m[1]);
+      var re2 = /'((?:McCall|Chevalier|Merkur|Jerry|Nakazato|Acheron|Bulldozer|Carolina|Deacon|Automobili|Monaco|Verhoeven)[^']+)'/g;
+      while ((m = re2.exec(ai))) if (!BTP.ObjMesh.find(m[1])) bad.push(m[1]);
+      return bad.length === 0;
+    })(),
+    (function () {
+      var re = /asset: '([^']+)'/g, m, bad = [];
+      while ((m = re.exec(ai))) if (!BTP.ObjMesh.find(m[1])) bad.push(m[1]);
+      return bad.join(', ');
+    })());
   ok('cada coche declara su asset .obj explicito y unico',
     BTP.Garage.CARS.every(c => !!c.asset) &&
     new Set(BTP.Garage.CARS.map(c => c.asset)).size === BTP.Garage.CARS.length);

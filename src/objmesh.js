@@ -28,9 +28,13 @@
       var t = lines[i].trim();
       if (!t || t.charAt(0) === '#') continue;
       var parts = t.split(/\s+/), tag = parts[0];
-      if (tag === 'v') positions.push([+parts[1], +parts[2], +parts[3]]);
+      /* Unity exporta las mallas con el eje Y como largo y el Z como alto
+         (X = ancho). El juego trabaja con X = ancho, Y = alto, Z = largo,
+         asi que se intercambian Y y Z al cargar: (x, y, z) -> (x, z, y).
+         Sin este cambio el coche mide 5 de alto y 1 de largo. */
+      if (tag === 'v') positions.push([+parts[1], +parts[3], +parts[2]]);
       else if (tag === 'vt') uvs.push([+parts[1], +parts[2]]);
-      else if (tag === 'vn') normals.push([+parts[1], +parts[2], +parts[3]]);
+      else if (tag === 'vn') normals.push([+parts[1], +parts[3], +parts[2]]);
       else if (tag === 'f') {
         var face = [];
         for (var k = 1; k < parts.length; k++) {
@@ -84,6 +88,24 @@
     return null;
   }
 
+  /* Busca una textura por su clave EXACTA (p.ej. '11 - CarsPaletteV2 - Taxi').
+     Se usa para la pintura: el nombre del asset trae el tipo de librea
+     ('... Taxi', '... Police', '... Medivac'...) y la paleta correcta se
+     localiza en la textura de paleta correspondiente. */
+  function textureByKey(key) {
+    if (!key) return null;
+    var keys = Object.keys(TEXTURES), want = norm(key);
+    for (var i = 0; i < keys.length; i++) {
+      if (norm(keys[i]) === want) {
+        if (!texCache[keys[i]]) {
+          texCache[keys[i]] = new THREE.TextureLoader().load(TEXTURES[keys[i]]);
+        }
+        return texCache[keys[i]];
+      }
+    }
+    return null;
+  }
+
   function find(query) {
     if (!query) return null;
     var q = norm(query), keys = Object.keys(MODELS);
@@ -123,7 +145,7 @@
       if (!name) return null;
       var geo = geometry(name);
       if (!geo) return null;
-      var map = textureFor(spec.asset || spec.name);
+      var map = textureByKey(spec.paintTexture) || textureFor(spec.asset || spec.name);
       var material = new THREE.MeshLambertMaterial({
         color: map ? 0xffffff : (spec.color || '#f57c1f'),
         map: map || null, side: THREE.DoubleSide

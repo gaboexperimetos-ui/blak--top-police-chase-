@@ -10,16 +10,101 @@
   var TRAFFIC_COLORS = ['#e7e9ec', '#3d6fb4', '#c34a4a', '#4a9b6c', '#d8c14a', '#7b5ba6', '#2f343c', '#d98a3a', '#e3c07a', '#5d7f9c'];
   var DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
+  /* =======================================================================
+   * ASSETS ORIGINALES DEL BUNDLE (nombres exactos de los .obj extraidos)
+   *
+   * El juego original define el tráfico y las patrullas con CarSetup /
+   * CarSetup_Visuals / CarSetup_PlayerPolice y Class_WeightedCarSetup: un
+   * catalogo de chassis con sus libreas. Estas son esas mallas, tal cual.
+   * ======================================================================= */
+
+  /* Libreas de policia disponibles por nivel de persecucion (nivel 1..6). */
+  var POLICE_LIVERIES = [
+    ['McCall Manchester Police'],
+    ['McCall Manchester Police', 'McCall Monaco State Police'],
+    ['McCall Manchester Police', 'McCall Monaco State Police', 'McCall Montpellier Gendarmerie'],
+    ['McCall Manchester Police', 'McCall Monaco State Police', 'McCall Montpellier Gendarmerie',
+     'Chevalier Bonheur Gendarmerie', 'Jerry Navigator Police'],
+    ['McCall Manchester Police', 'McCall Monaco State Police', 'McCall Montpellier Gendarmerie',
+     'Chevalier Bonheur Gendarmerie', 'Jerry Navigator Police',
+     'Merkur 668 Polizei', 'Merkur 668 Rijkspolitie'],
+    ['McCall Manchester Police', 'McCall Monaco State Police', 'McCall Montpellier Gendarmerie',
+     'Chevalier Bonheur Gendarmerie', 'Jerry Navigator Police',
+     'Merkur 668 Polizei', 'Merkur 668 Rijkspolitie',
+     'Nakazato Cricket State Trooper', 'Acheron Redhawk Police']
+  ];
+  /* Furgon blindado de las unidades especiales (nivel 4+): el mas grande del bundle. */
+  var SWAT_ASSET = 'Bulldozer Police';
+
+  /* Trafico civil: chassis reales del bundle con la silueta que usan. */
+  var TRAFFIC_ASSETS = [
+    { asset: 'Deacon Grommit',                        shape: 'hatch'  },
+    { asset: 'Nakazato Cricket Base',                 shape: 'hatch'  },
+    { asset: 'Chevalier Bonheur',                     shape: 'hatch'  },
+    { asset: 'Chevalier XIV',                         shape: 'sedan'  },
+    { asset: 'Merkur 668 Convertible',                shape: 'sedan'  },
+    { asset: 'Deacon Mayflower Base Simple Paletted', shape: 'sedan'  },
+    { asset: 'McCall Miami',                          shape: 'sedan'  },
+    { asset: 'McCall Manchester Hardtop',             shape: 'sedan'  },
+    { asset: 'Jerry Navigator SUV',                   shape: 'van'    },
+    { asset: 'Jerry Navigator Construction',          shape: 'van'    },
+    { asset: 'Carolina Corsair Cargo',                shape: 'van'    },
+    { asset: 'Station Wagon Base Simple Paletted',    shape: 'van'    },
+    { asset: 'Carolina Pilgrim Base Simple Paletted', shape: 'pickup' },
+    { asset: 'Automobili Mangione 4000 Base',         shape: 'sport'  },
+    { asset: 'McCall Monaco',                         shape: 'hyper'  },
+    { asset: 'McCall Monaco Bald Eagle',                   shape: 'muscle' },
+    { asset: 'Acheron Redhawk Base',                  shape: 'muscle' },
+    { asset: 'Verhoeven Piranha V8',                  shape: 'muscle' },
+    { asset: 'Automobili Mangione 4000 Taxi',         shape: 'sedan',  taxi: true },
+    { asset: 'Nakazato Cricket Taxi',                 shape: 'hatch',  taxi: true },
+    { asset: 'Merkur 668 Taxi',                       shape: 'sedan',  taxi: true },
+    { asset: 'Jerry Navigator SUV Taxi',              shape: 'van',    taxi: true }
+  ];
+
+  /* Pintura (paleta CarsPaletteV2) que corresponde a cada librea del bundle.
+     El orden importa: primero los mas especificos. */
+  var PAINT_BY_KEYWORD = [
+    ['Rijkspolitie',   '8 - CarsPaletteV2 - Dutch and German Police'],
+    ['State Trooper',  '3 - CarsPaletteV2 - Police State Trooper'],
+    ['Gendarmerie',    '5 - CarsPaletteV2 - Police France'],
+    ['Polizei',        '2 - CarsPaletteV2 - Police Black White'],
+    ['Medivac',        '6 - CarsPaletteV2 - Medivac'],
+    ['Hearse',         '12 - CarsPaletteV2 - Hearse'],
+    ['Chief',          '7 - CarsPaletteV2 - Chief'],
+    ['Park Ranger',    '4 - CarsPaletteV2 - Park Ranger'],
+    ['Driving School', '10 - CarsPaletteV2 - Driving School'],
+    ['General Jacques','13 - CarsPaletteV2 - General Jacques'],
+    ['Bald Eagle',     '14 - CarsPaletteV2 - Bald Eagle Racecar'],
+    ['Taxi',           '11 - CarsPaletteV2 - Taxi'],
+    ['Police',         '2 - CarsPaletteV2 - Police Black White']
+  ];
+  var DEFAULT_PAINT = '5 - CarsPaletteV2 - White';
+
+  function paintFor(asset) {
+    for (var i = 0; i < PAINT_BY_KEYWORD.length; i++) {
+      if (String(asset).indexOf(PAINT_BY_KEYWORD[i][0]) >= 0) return PAINT_BY_KEYWORD[i][1];
+    }
+    return DEFAULT_PAINT;
+  }
+
   function laneOffset(dx, dz) { return { x: -dz * 4.6, z: dx * 4.6 }; }
 
   /* Variedad real de vehículos: compactos, berlinas, muscle, furgonetas,
      pickups, deportivos, taxis, autobuses y camiones de reparto. */
   function trafficSpec() {
     var r = Math.random();
+    /* Autobuses y camiones de reparto no existen como chassis en el bundle:
+       esos siguen siendo procedurales. */
     if (r < .07) return { shape: 'bus', color: U.choice(['#d8c14a', '#4a9b6c', '#3f7fb0']), traffic: true, scale: 1 };
     if (r < .13) return { shape: 'truck', color: U.choice(['#e6e9ec', '#5b636d', '#c0563c']), traffic: true, scale: 1 };
-    if (r < .22) return { shape: 'sedan', color: '#f5c518', taxi: true, traffic: true, scale: 1.05 };
-    return { shape: U.choice(TRAFFIC_SHAPES), color: U.choice(TRAFFIC_COLORS), traffic: true, scale: 1.05 };
+    /* El resto del trafico usa las mallas originales del bundle. */
+    var t = U.choice(TRAFFIC_ASSETS);
+    return {
+      shape: t.shape, asset: t.asset, paintTexture: paintFor(t.asset),
+      color: t.taxi ? '#f5c518' : U.choice(TRAFFIC_COLORS),
+      taxi: !!t.taxi, traffic: true, scale: 1.05
+    };
   }
   function farFrom(list, x, z, min) {
     var m2 = min * min;
@@ -210,7 +295,16 @@
       if (farFrom(this.cars, cand.x, cand.z, 16)) { p = cand; break; }
       if (!p) p = cand;
     }
-    var model = M.makeCar({ shape: this.level >= 4 && Math.random() < 0.35 ? 'van' : 'police', police: true, scale: 1.12 });
+    /* Patrulla real del bundle: la librea se elige segun el nivel de
+       persecucion y a partir del 4 aparecen las unidades blindadas. */
+    var lvl = Math.min(Math.max(this.level, 1), POLICE_LIVERIES.length);
+    var pool = POLICE_LIVERIES[lvl - 1];
+    var isSwat = this.level >= 4 && Math.random() < 0.35;
+    var asset = isSwat ? SWAT_ASSET : U.choice(pool);
+    var model = M.makeCar({
+      shape: isSwat ? 'truck' : 'police', asset: asset,
+      paintTexture: paintFor(asset), police: true, scale: 1.12
+    });
     city.group.add(model.group);
     var node = city.nearestIntersection(p.x, p.z);
     var car = {
