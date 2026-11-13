@@ -101,7 +101,7 @@ blacktop-police-chase-assets/
   ASSET-MANIFEST.json  estado exacto de lo recibido y lo que falta
 tools/import-assets.js  genera src/original-assets.js desde models/ y textures/
 src/game.js           bucle principal, cámaras y pantalla dividida
-tests/smoke.js        122 comprobaciones sin navegador (npm test)
+tests/smoke.js        124 comprobaciones sin navegador (npm test)
 ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ```
 
@@ -110,7 +110,7 @@ ANALISIS.md           análisis del original + tabla de cobertura de funciones
 ## ✅ Verificación
 
 ```bash
-npm test    # 122 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, assets, spawns y offline
+npm test    # 124 comprobaciones: sintaxis, módulos, lógica, garaje, vehículos, assets, spawns y offline
 ```
 
 También se probó en Chromium headless real con WebGL: arranque del menú, partida, conducción, ciclo completo del bucle **Modo Original** y del extendido, 60 s de persecución al máximo nivel (bloqueos, pinchos y helicóptero), garaje con los 21 coches, los 4 modos, **pantalla dividida de 2 jugadores**, spawns de policía delante del jugador, resultados, apertura desde `file://` y caché del Service Worker v10 — **0 errores de consola, 0 peticiones fallidas y 0 peticiones a internet**.
@@ -198,7 +198,11 @@ Con ese dato se corrigieron dos cosas reales del clon:
   son 7 umbrales: estado 0 sin policía + niveles 1…6.
 - **El garaje pasó de 12 a 21 coches**, con los nombres reales del bundle
   (Acheron Redhawk, Carolina Corsair, Nakazato Cricket, McCall Monaco,
-  Bulldozer…), todos desbloqueados desde el inicio como antes.
+  Bulldozer…), todos desbloqueados desde el inicio como antes. Al verificar
+  los meshes uno a uno se corrigieron tres entradas: *DEACONM* → **DEACON
+  GROMMIT** (ese es el nombre real), y *LOWPOLY BASIC* / *LOWPOLY SUPERBASIC* →
+  **MCCALL MIAMI** / **VERHOEVEN PIRANHA V8**, porque en el bundle no hay
+  coches "Lowpoly" sino solo las cuatro ruedas `Wheel Lowpoly *`.
 
 Ahora además **las carrocerías son los modelos originales**: `BTP.ObjMesh`
 sustituye las siluetas procedurales por los `.obj` reales, y los **21 coches del
@@ -263,8 +267,9 @@ Procedimiento aplicado:
    los nombres del garaje del clon.
 4. `node tools/import-assets.js` → genera `src/original-assets.js` (14 MB) con
    los `.obj` como texto y los `.png` como data URI.
-5. `npm test` → **119 comprobaciones OK, 0 fallos**, incluidos los 21 vehículos
-   resolviendo a su malla real.
+5. `npm test` → **124 comprobaciones OK, 0 fallos**, incluidos los 21 vehículos
+   resolviendo a su malla real (y de forma **exacta y única**, con un campo
+   `asset` explícito por coche).
 
 El importador embebe los datos en `src/original-assets.js` (sin `fetch`, sin
 CDN, sin imports ESM), así que sigue funcionando **sin wifi y con `file://`**.

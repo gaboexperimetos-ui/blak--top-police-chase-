@@ -150,7 +150,8 @@ if (BTP) {
   ok('21 nombres reales del bundle en el garaje',
     s2('src/garage.js').includes('ACHERON REDHAWK') &&
     s2('src/garage.js').includes('CAROLINA CORSAIR') &&
-    s2('src/garage.js').includes('LOWPOLY SUPERBASIC'));
+    s2('src/garage.js').includes('MCCALL MIAMI') &&
+    s2('src/garage.js').includes('VERHOEVEN PIRANHA V8'));
   ok('ids del catálogo y del guardado coinciden (21)',
     BTP.Garage.CARS.every(c => BTP.Save.data.unlocked.indexOf(c.id) >= 0));
   ok('documento del bundle guardado en el repo',
@@ -182,6 +183,20 @@ if (BTP) {
   ok('los 21 vehiculos del garaje resuelven a un .obj original',
     BTP.Garage.CARS.every(c => !!BTP.ObjMesh.find(c.name)),
     BTP.Garage.CARS.filter(c => !BTP.ObjMesh.find(c.name)).map(c => c.name).join(', '));
+  ok('cada coche declara su asset .obj explicito y unico',
+    BTP.Garage.CARS.every(c => !!c.asset) &&
+    new Set(BTP.Garage.CARS.map(c => c.asset)).size === BTP.Garage.CARS.length);
+  ok('los 21 assets resuelven a un mesh EXACTO (sin coincidencias parciales)',
+    BTP.Garage.CARS.every(c => {
+      var k = BTP.ObjMesh.find(c.asset);
+      return !!k && k.toLowerCase().replace(/[^a-z0-9]/g, '') ===
+        String(c.asset).toLowerCase().replace(/[^a-z0-9]/g, '');
+    }),
+    BTP.Garage.CARS.filter(c => {
+      var k = BTP.ObjMesh.find(c.asset);
+      return !k || k.toLowerCase().replace(/[^a-z0-9]/g, '') !==
+        String(c.asset).toLowerCase().replace(/[^a-z0-9]/g, '');
+    }).map(c => c.name + '->' + c.asset).join(', '));
   ok('fallback procedural sigue disponible como respaldo',
     models.includes('M.makeCar') && models.includes('bodyGeometry'));
   const ssh = src('tools/setup-ssh.sh');

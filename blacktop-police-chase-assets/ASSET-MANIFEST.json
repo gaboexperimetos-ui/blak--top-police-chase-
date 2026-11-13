@@ -22,26 +22,27 @@
       "Automobili Mangione 4000",
       "Bald Eagle",
       "Bulldozer",
+      "Carolina Corsair",
+      "Carolina Pilgrim",
       "Chevalier Bonheur",
       "Chevalier XIV",
+      "Deacon Grommit",
       "Deacon Mayflower",
-      "DeaconM",
       "Jerry Navigator",
-      "Lowpoly Basic",
-      "Lowpoly SuperBasic",
       "McCall Manchester",
+      "McCall Miami",
       "McCall Monaco",
       "McCall Montpellier",
       "Merkur 668",
       "Monaco Bald Eagle",
-      "Monaco Driv",
       "Nakazato Cricket",
-      "Pilgrim",
-      "Station Wagon"
+      "Station Wagon",
+      "Verhoeven Piranha V8"
     ],
     "recibidos": 357,
     "vertices_totales": 121682,
-    "caras_totales": 77846
+    "caras_totales": 77846,
+    "nota": "Verificado sobre los 357 meshes del bundle: hay 19 FAMILIAS de coche reales (las variantes son liveries del mismo chasis) y 4 ruedas 'Wheel Lowpoly *'. El nombre 'Lowpoly Basic'/'Lowpoly SuperBasic' NO es un coche: en el bundle solo existen las ruedas. Los 21 coches del garaje del clon usan 21 meshes reales y distintos."
   },
   "texturas_esperadas": {
     "total_declarado": 78,
@@ -64,15 +65,18 @@
     "geometria_real": "Si: 357/357 meshes con vertices y caras (0 vacios).",
     "renombrados": {
       "Perry Navigator -> Jerry Navigator": "El asset original se llama 'Perry Navigator *' en Unity; el clon lo llama 'JERRY NAVIGATOR SUV'. Se renombraron los .obj en disco para que el finder los resuelva. Nombre original conservado en metadata/meshes.json.",
-      "Lowpoly Basic Paletted": "El juego busca 'LOWPOLY BASIC' y 'LOWPOLY SUPERBASIC'; ambos resuelven a los meshes 'Wheel Lowpoly * Paletted' que son las ruedas low-poly."
+      "Lowpoly Basic Paletted": "El juego busca 'LOWPOLY BASIC' y 'LOWPOLY SUPERBASIC'; ambos resuelven a los meshes 'Wheel Lowpoly * Paletted' que son las ruedas low-poly.",
+      "Lowpoly Basic / Lowpoly SuperBasic": "CORREGIDO: en el bundle no hay coches 'Lowpoly *', solo las 4 ruedas 'Wheel Lowpoly * Paletted'. El clon los usaba como si fueran coches y acaba renderizando una rueda estirada. Se sustituyeron por los dos coches reales que faltaban en el catalogo: 'McCall Miami' y 'Verhoeven Piranha V8'.",
+      "DEACONM": "El bundle no tiene 'DeaconM': los nombres reales son 'Deacon Grommit' y 'Deacon Mayflower Base Simple Paletted'. El clon lo renombro a DEACON GROMMIT."
     },
-    "verificacion": "npm test -> 119 comprobaciones OK, 0 fallos (incluye los 21 vehiculos).",
+    "verificacion": "npm test -> 124 comprobaciones OK, 0 fallos (incluye: 357 modelos cargados, 21 assets exactos y unicos, resolucion por nombre y por asset).",
     "limitaciones": [
       "No se extrajeron sonidos (AudioClip no exportable con UnityPy).",
       "El codigo del juego (Build.wasm) no se decompilo.",
       "No hay escena jugable completa: los meshes van sueltos, sin el mapa armado.",
-      "Los .obj no traen UVs ni texturas asignadas por material: el juego usa la pintura por color plano + textura de paleta cuando encuentra coincidencia."
-    ]
+      "Los .obj no traen UVs ni texturas asignadas por material: el juego usa la pintura por color plano + la textura de paleta cuando encuentra coincidencia."
+    ],
+    "mapeo_garaje": "src/garage.js declara ahora un campo 'asset' explicito por coche (ya soportado por physics.js: 'asset: spec.name || spec.asset'), con lo que la resolucion es exacta y no depende del matching por texto. Los 21 resuelven a 21 meshes distintos."
   },
   "ficheros_entregados": {
     "modelos": "blacktop-police-chase-assets/models/*.obj  (357 archivos)",

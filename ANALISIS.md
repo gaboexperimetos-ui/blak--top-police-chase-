@@ -281,9 +281,29 @@ Puesta en marcha:
 4. `node tools/import-assets.js` → `src/original-assets.js` (14 MB) con los
    `.obj` como texto y los `.png` como data URI. Cero `fetch`, cero CDN, cero
    imports ESM: sigue funcionando con `file://` y sin wifi.
-5. `npm test` → **119 comprobaciones OK, 0 fallos**, incluidas dos nuevas:
-   *los 357 modelos cargados* y *los 21 coches del garaje resuelven a un `.obj`
-   real*. El fallback procedural se conserva como respaldo.
+5. `npm test` → **124 comprobaciones OK, 0 fallos**, incluidas cuatro nuevas:
+   *los 357 modelos cargados*, *los 21 coches resuelven a un `.obj` real*,
+   *cada coche declara un `asset` único* y *los 21 assets resuelven a un mesh
+   **exacto** (sin coincidencias parciales)*. El fallback procedural se
+   conserva como respaldo.
+
+### Corrección del catálogo tras verificar los 357 meshes
+
+Al comprobar uno por uno los 357 `.obj` contra los 21 coches del garaje
+aparecieron tres errores del catálogo, ya corregidos:
+
+| Entrada anterior | Problema real | Entrada correcta |
+|---|---|---|
+| `DEACONM` | No existe ese mesh; los reales son *Deacon Grommit* y *Deacon Mayflower* | **DEACON GROMMIT** → `Deacon Grommit` |
+| `LOWPOLY BASIC` | En el bundle no hay coches "Lowpoly": solo las 4 ruedas `Wheel Lowpoly *` | **MCCALL MIAMI** → `McCall Miami` (coche real que faltaba) |
+| `LOWPOLY SUPERBASIC` | Ídem: se renderizaba como una rueda estirada | **VERHOEVEN PIRANHA V8** → `Verhoeven Piranha V8` (coche real que faltaba) |
+
+El bundle contiene **19 familias de coche reales** (las variantes son liveries
+del mismo chasis) más 4 ruedas low-poly. Para que la resolución no dependiera
+del matching por texto, `src/garage.js` declara ahora un campo **`asset`**
+explícito por coche —el mecanismo que `physics.js` ya soportaba con
+`asset: spec.name || spec.asset`—. Los 21 coches resuelven así a **21 meshes
+reales y distintos**, todos con coincidencia exacta.
 
 **Lo que sigue sin ser copia bit a bit**: logo, música, sonidos y SDK de Poki,
 y el código fuente del juego. La ciudad sigue generándose por código; los
