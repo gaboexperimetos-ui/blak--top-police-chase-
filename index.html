@@ -1,135 +1,244 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0e141d">
-<meta name="description" content="Clon offline de Blacktop: Police Chase. Juega sin wifi: ciudad 3D, atracos, persecución policial, garaje y modo 2 jugadores.">
-<title>BLACKTOP: POLICE CHASE · OFFLINE</title>
-<link rel="stylesheet" href="styles.css">
+<title>Blacktop Police Chase — Offline</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+  #unity-canvas { width: 100%; height: 100%; display: block; background: #000; }
+  #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+             color: #fff; font-family: system-ui, sans-serif; font-size: 20px; z-index: 10;
+             background: #111; transition: opacity .4s; }
+  #loading .bar { width: 300px; height: 8px; background: #333; border-radius: 4px; margin-top: 14px; overflow: hidden; }
+  #loading .bar > div { height: 100%; width: 0%; background: #4caf50; transition: width .2s; }
+</style>
 </head>
 <body>
-<div id="app">
-  <canvas id="game"></canvas>
-  <div id="flash"></div>
-  <div id="scanlines"></div>
+<div id="loading"><div style="text-align:center">Cargando Blacktop Police Chase…<div class="bar"><div id="pbar"></div></div></div></div>
+<canvas id="unity-canvas" tabindex="-1"></canvas>
 
-  <!-- ============================== HUD ============================== -->
-  <div id="hud" class="hidden">
-    <div class="hud-tl">
-      <div class="meter">
-        <span class="meter-label" data-i18n="hud.damage">DAÑO</span>
-        <div class="bar"><i id="bar-damage"></i></div>
-      </div>
-      <div class="meter">
-        <span class="meter-label" data-i18n="hud.police">POLICÍA</span>
-        <div class="bar police"><i id="bar-police"></i></div>
-      </div>
-      <div id="wanted" class="stars"></div>
-      <div id="heat-label" class="tiny"></div>
-    </div>
-
-    <div class="hud-tc">
-      <div id="banner" class="banner">
-        <div class="green-arrow">➤</div>
-        <div class="banner-text"><b id="banner-title"></b><small id="banner-sub"></small></div>
-      </div>
-      <div id="robbery" class="robbery hidden"><i id="bar-robbery"></i></div>
-      <div id="challenge" class="challenge"></div>
-      <div id="distance" class="distance"></div>
-    </div>
-
-    <div class="hud-tr">
-      <div class="money"><span class="coin">$</span><span id="money">0</span></div>
-      <div class="score"><span data-i18n="hud.score">PUNTOS</span> <b id="score">0</b> <span class="coin">●</span></div>
-      <div class="hud-buttons">
-        <button id="btn-pause" class="icon-btn" title="Pausa">Ⅱ</button>
-        <button id="btn-fullscreen" class="icon-btn" title="Pantalla completa">⛶</button>
-        <button id="btn-map" class="icon-btn" title="Mapa">▣</button>
-      </div>
-    </div>
-
-    <div id="minimap-wrap">
-      <canvas id="minimap" width="260" height="260"></canvas>
-      <div id="minimap-title" class="tiny">MAPA</div>
-    </div>
-
-    <div class="hud-bl">
-      <div id="p2-stats" class="p2-stats hidden"></div>
-    </div>
-
-    <div class="hud-bc">
-      <div id="timer" class="timer hidden"></div>
-      <div id="multi" class="multi"></div>
-      <div class="speedo">
-        <div class="speed-ring"><div class="speed-inner"><b id="speed">0</b><small data-i18n="hud.speed">KM/H</small></div></div>
-      </div>
-      <div class="meter nitro-meter">
-        <span class="meter-label" data-i18n="hud.nitro">NITRO</span>
-        <div class="bar"><i id="bar-nitro"></i></div>
-      </div>
-    </div>
-
-    <div id="split-labels" class="split-labels hidden"><span>J1</span><span>J2</span></div>
-    <div id="toast"></div>
-    <div id="center-msg"></div>
-    <div id="fps"></div>
-
-    <!-- Controles táctiles -->
-    <div id="touch">
-      <div class="touch-left">
-        <button data-touch="left" class="tbtn">◀</button>
-        <button data-touch="right" class="tbtn">▶</button>
-      </div>
-      <div class="touch-right">
-        <button data-touch="look" class="tbtn small">👁</button>
-        <button data-touch="nitro" class="tbtn small nitro">N</button>
-        <button data-touch="brake" class="tbtn small">B</button>
-        <button data-touch="throttle" class="tbtn big">▲</button>
-        <button data-touch="reverse" class="tbtn small">▼</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================ PANTALLAS ========================= -->
-  <div id="screen" class="screen"></div>
-
-  <!-- ============================ CARGA ============================= -->
-  <div id="loading">
-    <div class="load-logo"><span>BLACKTOP</span><small>POLICE CHASE</small></div>
-    <div class="load-bar"><i></i></div>
-    <div class="load-text">CARGANDO CIUDAD 3D…</div>
-  </div>
-  <div id="fatal" class="hidden"></div>
-</div>
-
-<!-- Todo local. Ninguna petición a internet. -->
-<script src="vendor/three.min.js"></script>
-<script src="src/core.js"></script>
-<script src="src/audio.js"></script>
-<script src="src/models.js"></script>
-<script src="src/city.js"></script>
-<script src="src/physics.js"></script>
-<script src="src/garage.js"></script>
-<script src="src/ai.js"></script>
-<script src="src/missions.js"></script>
-<script src="src/ui.js"></script>
-<script src="src/game.js"></script>
 <script>
-  window.addEventListener('load', function () {
-    try { BTP.Game.boot(); }
-    catch (err) {
-      console.error(err);
-      var f = document.getElementById('fatal');
-      f.className = '';
-      f.innerHTML = '<h1>ERROR AL INICIAR</h1><p>' + (err && err.message ? err.message : err) + '</p>' +
-        '<p>Prueba a abrir el juego con <code>npm start</code> o en otro navegador con WebGL.</p>';
-      document.getElementById('loading').classList.add('hidden');
-    }
-  });
-  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-    window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () {}); });
+/* ---- PokiSDK stub: resolves rewards/ads instantly, no network ---- */
+(function () {
+  function resolvedTrue() { return Promise.resolve(true); }
+  function resolvedVoid() { return Promise.resolve(); }
+  function noop() { return undefined; }
+  const stub = {
+    init: () => resolvedVoid(),
+    initWithVideoHB: () => resolvedVoid(),
+    commercialBreak: (cb) => { try { cb && cb(); } catch (e) {} return resolvedVoid(); },
+    rewardedBreak: (cb) => { try { cb && cb(); } catch (e) {} return resolvedTrue(); },
+    displayAd: noop,
+    destroyAd: noop,
+    getLeaderboard: () => Promise.resolve([]),
+    shareableURL: () => location.href,
+    getURLParam: () => null,
+    getLanguage: () => "es",
+    getDeviceInfo: () => ({ device: { type: "desktop" }, browser: { name: "Chrome" } }),
+    isAdBlocked: () => Promise.resolve(false),
+    getUser: () => Promise.resolve(null),
+    getToken: () => Promise.resolve(null),
+    login: () => Promise.resolve(null),
+    generateScreenshot: () => Promise.resolve(""),
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: noop,
+    setVolume: noop,
+    hoistDisplayAd: noop,
+    startLoadingMonetizationCore: () => resolvedVoid(),
+    configureA9: noop,
+    addPrebidAdUnits: noop,
+    startStartAdsAfterTimer: noop,
+    setGameSpecificSettings: noop,
+    measure: noop,
+    stopVideoAd: noop,
+    resizeVideoAd: noop,
+    forcePreroll: noop,
+    playgroundPlatformAd: () => resolvedVoid(),
+    playgroundCommercialBreak: () => resolvedVoid(),
+    platformCommercialBreak: () => resolvedVoid(),
+    setVideoDebug: noop,
+    adBlocked: false,
+    __bypassed: true,
+  };
+  try {
+    Object.defineProperty(window, "PokiSDK", { configurable: true, enumerable: true, get: () => stub, set: () => {} });
+  } catch (e) {
+    window.PokiSDK = stub;
   }
+})();
+
+/* ---- Unity <-> PokiSDK bridge (replaces unity-2020.js loader) ---- */
+(function () {
+  window.pokiReady = true;
+  window.pokiAdBlock = false;
+
+  window.initPokiBridge = function (bridgeName) {
+    window.__pokiBridgeTarget = bridgeName;
+    var send = function () {
+      if (window.unityGame && typeof window.unityGame.SendMessage === "function") {
+        window.unityGame.SendMessage(bridgeName, "ready");
+        console.log("[Blacktop] poki bridge listo:", bridgeName);
+      } else {
+        setTimeout(send, 100);
+      }
+    };
+    send();
+  };
+
+  window.commercialBreak = function () {
+    PokiSDK.commercialBreak().then(function () {
+      if (window.unityGame && window.__pokiBridgeTarget) {
+        window.unityGame.SendMessage(window.__pokiBridgeTarget, "commercialBreakCompleted");
+      }
+    });
+  };
+
+  window.rewardedBreak = function () {
+    PokiSDK.rewardedBreak().then(function (success) {
+      if (window.unityGame && window.__pokiBridgeTarget) {
+        window.unityGame.SendMessage(window.__pokiBridgeTarget, "rewardedBreakCompleted", String(success));
+      }
+      console.log("[Blacktop] rewardedBreak ->", success);
+    });
+  };
+
+  window.shareableURL = function (json) {
+    if (window.unityGame && window.__pokiBridgeTarget) {
+      window.unityGame.SendMessage(window.__pokiBridgeTarget, "shareableURLResolved", location.href);
+    }
+  };
+})();
+
+/* ---- Save patch: money + all cars (localStorage) ----
+   The game reads the save once at boot, so we pre-seed it BEFORE Unity starts
+   and also intercept every read/write to keep money/cars patched. */
+(function () {
+  const KEY = "Blacktop1_Save";
+
+  function buildCars() {
+    const cars = [];
+    for (let x = 0; x <= 20; x++) for (let y = 0; y <= 10; y++) cars.push({ x: x, y: y });
+    return cars;
+  }
+
+  function patchObject(s) {
+    if (!s || typeof s !== "object") return s;
+    s.money = 999999999;
+    s.hiScore = Math.max(Number(s.hiScore) || 0, 999999);
+    s.unlockedCars = buildCars();
+    return s;
+  }
+
+  function patchString(raw) {
+    try { return JSON.stringify(patchObject(JSON.parse(raw))); }
+    catch (e) { return raw; }
+  }
+
+  function defaultSave() {
+    return patchObject({
+      app_Version: "1",
+      save_GUID: "00000000-0000-4000-8000-000000000000",
+      player_GUID: "00000000-0000-4000-8000-000000000000",
+      languageChoice: 43,
+      options_mute: false,
+      options_graphicsQuality: 1,
+      money: 999999999,
+      hiScore: 0,
+      savedCar: 0,
+      savedColor: 0,
+      previouslyUsedCarColors: [],
+      unlockedCars: [],
+    });
+  }
+
+  // Pre-seed before Unity boots
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) {
+      localStorage.setItem(KEY, JSON.stringify(defaultSave()));
+      console.log("[Blacktop] save creado con dinero y autos");
+    } else {
+      localStorage.setItem(KEY, patchString(raw));
+      console.log("[Blacktop] save presembrado");
+    }
+  } catch (e) { console.warn("[Blacktop] preseed:", e); }
+
+  // Keep the save patched even if the game rewrites it
+  try {
+    const origGet = Storage.prototype.getItem;
+    const origSet = Storage.prototype.setItem;
+    Storage.prototype.getItem = function (k) {
+      const v = origGet.call(this, k);
+      return (k === KEY && v) ? patchString(v) : v;
+    };
+    Storage.prototype.setItem = function (k, v) {
+      if (k === KEY && typeof v === "string") v = patchString(v);
+      return origSet.call(this, k, v);
+    };
+  } catch (e) { console.warn("[Blacktop] hook storage:", e); }
+
+  window.__blacktopPatchSave = function () {
+    try {
+      const raw = localStorage.getItem(KEY);
+      localStorage.setItem(KEY, raw ? patchString(raw) : JSON.stringify(defaultSave()));
+    } catch (e) {}
+  };
+  window.addEventListener("load", window.__blacktopPatchSave);
+  setInterval(window.__blacktopPatchSave, 5000);
+})();
+</script>
+
+<script src="Build/Build.loader.js"></script>
+<script>
+  const progressBar = document.getElementById("pbar");
+  const loadingEl = document.getElementById("loading");
+  const config = {
+    dataUrl: "Build/Build.data",
+    frameworkUrl: "Build/Build.framework.js",
+    codeUrl: "Build/Build.wasm",
+    streamingAssetsUrl: "StreamingAssets",
+    companyName: "Steelpan Interactive",
+    productName: "Blacktop Police Chase",
+    productVersion: "1.0",
+  };
+  createUnityInstance(document.querySelector("#unity-canvas"), config, (p) => {
+    if (progressBar) progressBar.style.width = Math.round(p * 100) + "%";
+  }).then((instance) => {
+    window.unityInstance = instance;
+    window.unityGame = instance;
+    if (loadingEl) { loadingEl.style.opacity = "0"; setTimeout(() => loadingEl.remove(), 500); }
+    console.log("[Blacktop] Unity listo");
+  }).catch((err) => {
+    console.error("[Blacktop] error Unity:", err);
+    if (loadingEl) loadingEl.textContent = "Error al cargar: " + err;
+  });
 </script>
 </body>
 </html>
