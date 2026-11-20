@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Blacktop Police Chase — Offline</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+  #unity-canvas { width: 100%; height: 100%; display: block; background: #000; }
+  #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+             color: #fff; font-family: system-ui, sans-serif; font-size: 20px; z-index: 10;
+             background: #111; transition: opacity .4s; }
+  #loading .bar { width: 300px; height: 8px; background: #333; border-radius: 4px; margin-top: 14px; overflow: hidden; }
+  #loading .bar > div { height: 100%; width: 0%; background: #4caf50; transition: width .2s; }
+
+  /* ---- MOD overlay (in-game) ---- */
+  #modBtn { position: fixed; left: 14px; bottom: 12px; z-index: 30; width: 46px; height: 46px;
+            border-radius: 50%; border: 2px solid rgba(255,255,255,.55); background: rgba(0,0,0,.55);
+            color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-family: system-ui, sans-serif; opacity: .55; transition: opacity .2s; }
+  #modBtn:hover { opacity: 1; }
+  #modPanel { position: fixed; left: 14px; bottom: 68px; z-index: 31; display: none;
+              background: rgba(18,18,20,.95); color: #fff; border: 1px solid rgba(255,255,255,.18);
+              border-radius: 12px; padding: 14px 16px; font-family: system-ui, sans-serif; width: 300px;
+              box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  #modPanel h3 { margin: 0 0 8px; font-size: 15px; font-weight: 600; letter-spacing: .3px; }
+  #modPanel .row { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  #modPanel button.opt { flex: 1 0 30%; padding: 7px 4px; border-radius: 8px; border: 1px solid #444;
+                         background: #232327; color: #eee; cursor: pointer; font-size: 13px; }
+  #modPanel button.opt.sel { background: #2e7d32; border-color: #4caf50; color: #fff; font-weight: 700; }
+  #modPanel .hint { font-size: 11.5px; color: #9aa0a6; margin-top: 8px; line-height: 1.35; }
+  #modPanel .status { font-size: 12px; margin-top: 8px; color: #8bc34a; min-height: 15px; }
+</style>
+</head>
+<body>
+<div id="loading"><div style="text-align:center">Cargando Blacktop Police Chase…<div class="bar"><div id="pbar"></div></div></div></div>
+<canvas id="unity-canvas" tabindex="-1"></canvas>
+
+<button id="modBtn" title="MOD: nivel de policía y tráfico">⚙</button>
+<div id="modPanel">
+  <h3>MOD — Nivel de policía</h3>
+  <div style="font-size:12px;color:#bbb">Elegí el nivel de policía (calibre y cantidad de cops):</div>
+  <div class="row" id="lvlRow"></div>
+  <div style="font-size:12px;color:#bbb;margin-top:8px">Cantidad exacta (máx. 512):</div>
+  <div class="row" id="custRow" style="align-items:center">
+    <input id="custInput" type="number" min="0" max="512" step="1" style="flex:1 1 90px;padding:6px 8px;
+      border-radius:8px;border:1px solid #444;background:#1b1b1f;color:#eee;font-size:13px;font-family:system-ui,sans-serif">
+    <button class="opt" id="custBtn" style="flex:1 1 90px">Aplicar</button>
+  </div>
+  <div style="font-size:12px;color:#bbb;margin-top:8px">Tráfico:</div>
+  <div class="row" id="trafRow"></div>
+  <div style="font-size:12px;color:#bbb;margin-top:8px">Coches de policía:</div>
+  <div class="row" id="varRow"></div>
+  <div class="status" id="modStatus">Buscando el juego…</div>
+  <div class="hint">El nivel se mantiene mientras jugás. Niveles altos (48 cops) pueden bajar los FPS.</div>
+</div>
+
+<script>
+/* ---- PokiSDK stub: resolves rewards/ads instantly, no network ---- */
+(function () {
+  function resolvedTrue() { return Promise.resolve(true); }
+  function resolvedVoid() { return Promise.resolve(); }
+  function noop() { return undefined; }
+  const stub = {
+    init: () => resolvedVoid(),
+    initWithVideoHB: () => resolvedVoid(),
+    commercialBreak: (cb) => { try { cb && cb(); } catch (e) {} return resolvedVoid(); },
+    rewardedBreak: (cb) => { try { cb && cb(); } catch (e) {} return resolvedTrue(); },
+    displayAd: noop,
+    destroyAd: noop,
+    getLeaderboard: () => Promise.resolve([]),
+    shareableURL: () => location.href,
+    getURLParam: () => null,
+    getLanguage: () => "es",
+    getDeviceInfo: () => ({ device: { type: "desktop" }, browser: { name: "Chrome" } }),
+    isAdBlocked: () => Promise.resolve(false),
+    getUser: () => Promise.resolve(null),
+    getToken: () => Promise.resolve(null),
+    login: () => Promise.resolve(null),
+    generateScreenshot: () => Promise.resolve(""),
+    captureError: noop,
+    customEvent: noop,
+    gameInteractive: noop,
+    gameLoadingFinished: noop,
+    gameLoadingProgress: noop,
+    gameLoadingStart: noop,
+    gameplayStart: noop,
+    gameplayStop: noop,
+    happyTime: noop,
+    logError: noop,
+    muteAd: noop,
+    roundEnd: noop,
+    roundStart: noop,
+    sendHighscore: noop,
+    setDebug: noop,
+    setDebugTouchOverlayController: noop,
+    setLogging: noop,
+    setPlayerAge: noop,
+    setPlaytestCanvas: noop,
+    enableEventTracking: noop,
+    openExternalLink: noop,
+    playtestSetCanvas: noop,
+    playtestCaptureHtmlOnce: noop,
+    playtestCaptureHtmlForce: noop,
+    playtestCaptureHtmlOn: noop,
+    playtestCaptureHtmlOff: noop,
+    movePill: noop,
+    showLeaderboard: noop,
+    setVolume: noop,
+    hoistDisplayAd: noop,
+    startLoadingMonetizationCore: () => resolvedVoid(),
+    configureA9: noop,
+    addPrebidAdUnits: noop,
+    startStartAdsAfterTimer: noop,
+    setGameSpecificSettings: noop,
+    measure: noop,
+    stopVideoAd: noop,
+    resizeVideoAd: noop,
+    forcePreroll: noop,
+    playgroundPlatformAd: () => resolvedVoid(),
+    playgroundCommercialBreak: () => resolvedVoid(),
+    platformCommercialBreak: () => resolvedVoid(),
+    setVideoDebug: noop,
+    adBlocked: false,
+    __bypassed: true,
+  };
+  try {
+    Object.defineProperty(window, "PokiSDK", { configurable: true, enumerable: true, get: () => stub, set: () => {} });
+  } catch (e) {
+    window.PokiSDK = stub;
+  }
+})();
+
+/* ---- Unity <-> PokiSDK bridge (replaces unity-2020.js loader) ---- */
+(function () {
+  window.pokiReady = true;
+  window.pokiAdBlock = false;
+
+  window.initPokiBridge = function (bridgeName) {
+    window.__pokiBridgeTarget = bridgeName;
+    var send = function () {
+      if (window.unityGame && typeof window.unityGame.SendMessage === "function") {
+        window.unityGame.SendMessage(bridgeName, "ready");
+        console.log("[Blacktop] poki bridge listo:", bridgeName);
+      } else {
+        setTimeout(send, 100);
+      }
+    };
+    send();
+  };
+
+  window.commercialBreak = function () {
+    PokiSDK.commercialBreak().then(function () {
+      if (window.unityGame && window.__pokiBridgeTarget) {
+        window.unityGame.SendMessage(window.__pokiBridgeTarget, "commercialBreakCompleted");
+      }
+    });
+  };
+
+  window.rewardedBreak = function () {
+    PokiSDK.rewardedBreak().then(function (success) {
+      if (window.unityGame && window.__pokiBridgeTarget) {
+        window.unityGame.SendMessage(window.__pokiBridgeTarget, "rewardedBreakCompleted", String(success));
+      }
+      console.log("[Blacktop] rewardedBreak ->", success);
+    });
+  };
+
+  window.shareableURL = function (json) {
+    if (window.unityGame && window.__pokiBridgeTarget) {
+      window.unityGame.SendMessage(window.__pokiBridgeTarget, "shareableURLResolved", location.href);
+    }
+  };
+})();
+
+/* ---- Save patch: money + all cars (localStorage) ----
+   The game reads the save once at boot, so we pre-seed it BEFORE Unity starts
+   and also intercept every read/write to keep money/cars patched. */
+(function () {
+  const KEY = "Blacktop1_Save";
+
+  function buildCars() {
+    const cars = [];
+    for (let x = 0; x <= 20; x++) for (let y = 0; y <= 10; y++) cars.push({ x: x, y: y });
+    return cars;
+  }
+
+  function patchObject(s) {
+    if (!s || typeof s !== "object") return s;
+    s.money = 999999999;
+    s.hiScore = Math.max(Number(s.hiScore) || 0, 999999);
+    s.unlockedCars = buildCars();
+    return s;
+  }
+
+  function patchString(raw) {
+    try { return JSON.stringify(patchObject(JSON.parse(raw))); }
+    catch (e) { return raw; }
+  }
+
+  function defaultSave() {
+    return patchObject({
+      app_Version: "1",
+      save_GUID: "00000000-0000-4000-8000-000000000000",
+      player_GUID: "00000000-0000-4000-8000-000000000000",
+      languageChoice: 43,
+      options_mute: false,
+      options_graphicsQuality: 1,
+      money: 999999999,
+      hiScore: 0,
+      savedCar: 0,
+      savedColor: 0,
+      previouslyUsedCarColors: [],
+      unlockedCars: [],
+    });
+  }
+
+  // Pre-seed before Unity boots
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) {
+      localStorage.setItem(KEY, JSON.stringify(defaultSave()));
+      console.log("[Blacktop] save creado con dinero y autos");
+    } else {
+      localStorage.setItem(KEY, patchString(raw));
+      console.log("[Blacktop] save presembrado");
+    }
+  } catch (e) { console.warn("[Blacktop] preseed:", e); }
+
+  // Keep the save patched even if the game rewrites it
+  try {
+    const origGet = Storage.prototype.getItem;
+    const origSet = Storage.prototype.setItem;
+    Storage.prototype.getItem = function (k) {
+      const v = origGet.call(this, k);
+      return (k === KEY && v) ? patchString(v) : v;
+    };
+    Storage.prototype.setItem = function (k, v) {
+      if (k === KEY && typeof v === "string") v = patchString(v);
+      return origSet.call(this, k, v);
+    };
+  } catch (e) { console.warn("[Blacktop] hook storage:", e); }
+
+  window.__blacktopPatchSave = function () {
+    try {
+      const raw = localStorage.getItem(KEY);
+      localStorage.setItem(KEY, raw ? patchString(raw) : JSON.stringify(defaultSave()));
+    } catch (e) {}
+  };
+  window.addEventListener("load", window.__blacktopPatchSave);
+  setInterval(window.__blacktopPatchSave, 5000);
+})();
+</script>
+
+<script src="Build/Build.loader.js"></script>
+<script>
+  const progressBar = document.getElementById("pbar");
+  const loadingEl = document.getElementById("loading");
+  const config = {
+    dataUrl: "Build/Build.data",
+    frameworkUrl: "Build/Build.framework.js",
+    codeUrl: "Build/Build.wasm",
+    streamingAssetsUrl: "StreamingAssets",
+    companyName: "Steelpan Interactive",
+    productName: "Blacktop Police Chase",
+    productVersion: "1.0",
+  };
+  createUnityInstance(document.querySelector("#unity-canvas"), config, (p) => {
+    if (progressBar) progressBar.style.width = Math.round(p * 100) + "%";
+  }).then((instance) => {
+    window.unityInstance = instance;
+    window.unityGame = instance;
+    if (loadingEl) { loadingEl.style.opacity = "0"; setTimeout(() => loadingEl.remove(), 500); }
+    console.log("[Blacktop] Unity listo");
+  }).catch((err) => {
+    console.error("[Blacktop] error Unity:", err);
+    if (loadingEl) loadingEl.textContent = "Error al cargar: " + err;
+  });
+</script>
+
+<script>
+/* ---- MOD en juego: nivel de policía y tráfico, escribiendo la memoria del juego ----
+
+   Descubierto con el metadata IL2CPP del propio Build.data:
+
+   CarSpawner (instancia viva en el heap), base = indice de su campo +0 (resetButton):
+     +15 maxTrafficSplitscreen   +16 maxTraffic        +17 maxTraffic_mobile
+     +18 maxPoliceSplitscreen    +19 maxPolice
+     +30 copsAlive               +31 copsToSpawn      +32 copsAllowed
+     +25..+28 floats 1.0 / 8.0 / 0.35 / 4.0  <- firma para localizar la instancia
+
+   StaticUIDatabase (bloque de campos estaticos), base = direccion del bloque:
+     +0  int   intendedAmountOfPlayers
+     +4  ptr   playerDatas
+     +8  float sharedFelony      <- medidor de "calor": 0 = sin policia, >0 = persecucion
+     +12..+22 bools (gameOver, PERSIST_*, SESSIONSETTING_DisableTraffic/Police, ONETIME_skipAd)
+     +24 ptr playerColors  +28 ptr playerCars  +32 ptr playerPoliceCars
+
+   El juego calcula copsAllowed = maxPolice - copsAlive, o sea maxPolice es el
+   TOTAL de cops (vivos + por salir). Por eso el MOD pone maxPolice = cops
+   pedidos y deja que el juego los vaya creando. */
+(function () {
+  const KEY = "blacktop_mod_v2";
+  const MAX_COPS = 512;                       // tope del selector
+
+  /* El juego crea la lista de vehiculos al cargar la escena con
+     maxPolice + maxTraffic + 1 (cops + trafico + jugador). Ese es el techo real:
+     pedir mas cops de los que hay en el pool no materializa ninguno mas.
+     mod_launcher.py escribe pool.json con el pool con el que arranco el juego. */
+  let POOL = null;
+  fetch("pool.json", { cache: "no-store" })
+    .then(r => (r.ok ? r.json() : null))
+    .then(j => {
+      if (!j || typeof j.pool !== "number") return;
+      POOL = j;
+      render();
+    })
+    .catch(() => {});
+
+  /* nivel: nombre, cops objetivo (maxPolice) y calor del medidor */
+  const LEVELS = [
+    { name: "Patrulla",   cops: 3,   heat: 0.15 },
+    { name: "Marea",      cops: 8,   heat: 0.35 },
+    { name: "Gazeta",     cops: 12,  heat: 0.55 },
+    { name: "Asedio",     cops: 20,  heat: 0.75 },
+    { name: "Caos",       cops: 32,  heat: 0.90 },
+    { name: "Apocalipsis", cops: 48, heat: 1.00 },
+    { name: "Tormenta",   cops: 96,  heat: 1.00 },
+    { name: "Infierno",   cops: 192, heat: 1.00 },
+    { name: "Apocalipsis 512", cops: 512, heat: 1.00 },
+  ];
+  const OFF_LEVEL = { name: "Sin policía", cops: 0, heat: 0 };
+  const TRAFFIC_OPTS = [0, 10, 20, 30, 50, 80];
+
+  /* el calor (sharedFelony) es el medidor de persecución: con 0 no hay cops.
+     Por debajo de 48 se toma el calor del nivel predefinido más cercano;
+     de 48 para arriba va a 1 (máxima persecución). */
+  function heatFor(cops) {
+    if (cops <= 0) return 0;
+    if (cops >= 48) return 1;
+    let best = LEVELS[0];
+    for (const L of LEVELS) if (Math.abs(L.cops - cops) < Math.abs(best.cops - cops)) best = L;
+    return best.heat;
+  }
+
+  /* mode: "auto" = tomar el valor del archivo (menú externo), -1 = sin policía,
+     0..N = nivel elegido en el panel, "custom" = cantidad escrita a mano */
+  let cfg = { mode: "auto", traffic: null, custom: 64 };
+  let varietyMode = "mixed";      // "mixed" = rotar modelos, "off" = solo los del juego
+  let lastVariety = 0;            // throttle del rotado (no reescribir cada frame)
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const c = JSON.parse(raw);
+      if (c.mode === "auto" || c.mode === "custom" || typeof c.mode === "number") cfg.mode = c.mode;
+      else if (typeof c.level === "number") cfg.mode = c.level;   // versión previa (level)
+      if (typeof c.traffic === "number") cfg.traffic = c.traffic;
+      if (typeof c.custom === "number") cfg.custom = clampCops(c.custom);
+      if (c.variety === "off" || c.variety === "mixed") varietyMode = c.variety;
+    } else {
+      // migración desde la versión vieja (police/traffic numéricos)
+      const old = JSON.parse(localStorage.getItem("blacktop_mod") || "{}");
+      if (typeof old.police === "number" && old.police > 0) {
+        let best = 0;
+        for (let i = 1; i < LEVELS.length; i++)
+          if (Math.abs(LEVELS[i].cops - old.police) < Math.abs(LEVELS[best].cops - old.police)) best = i;
+        cfg.mode = best;
+      }
+      if (typeof old.traffic === "number") cfg.traffic = old.traffic;
+    }
+  } catch (e) {}
+
+  function clampCops(v) {
+    v = Math.round(Number(v) || 0);
+    return Math.max(0, Math.min(MAX_COPS, v));
+  }
+
+  const lvlRow = document.getElementById("lvlRow");
+  const trafRow = document.getElementById("trafRow");
+  const custRow = document.getElementById("custRow");
+  const custInput = document.getElementById("custInput");
+  const custBtn = document.getElementById("custBtn");
+  const statusEl = document.getElementById("modStatus");
+  const panel = document.getElementById("modPanel");
+  const btn = document.getElementById("modBtn");
+
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        mode: cfg.mode, traffic: cfg.traffic, custom: cfg.custom, variety: varietyMode,
+      }));
+    } catch (e) {}
+  }
+
+  /* boot: valor del archivo (maxPolice / maxTraffic) capturado la primera vez
+     que el juego está listo. En modo "auto" el MOD respeta ese valor y además
+     enciende el calor (sharedFelony), que es lo que hace que la policía exista. */
+  let boot = null;
+
+  function target() {
+    if (cfg.mode === "auto") {
+      if (!boot) return null;                       // todavía no se leyó el archivo
+      const cops = Math.max(0, Math.min(MAX_COPS, boot.police | 0));
+      return {
+        // el menú externo ya eligió la cantidad: calor máximo (1) para que arranque la persecución
+        level: { name: "Del archivo", cops: cops, heat: cops > 0 ? 1 : 0 },
+        traffic: cfg.traffic != null ? cfg.traffic
+               : (boot.traffic > 0 ? boot.traffic : 10)   // con tráfico 0 el juego no spawnea
+      };
+    }
+    if (cfg.mode === "custom") {
+      const cops = clampCops(cfg.custom);
+      return {
+        level: { name: "Personalizado", cops: cops, heat: heatFor(cops) },
+        traffic: cfg.traffic != null ? cfg.traffic : 20
+      };
+    }
+    const level = cfg.mode < 0 ? OFF_LEVEL : LEVELS[Math.min(cfg.mode, LEVELS.length - 1)];
+    return { level: level, traffic: cfg.traffic != null ? cfg.traffic : 20 };
+  }
+
+  /* ---------------- localizadores de memoria ---------------- */
+
+  function isPtr(v, lim) { return v > 4096 && v < lim && (v & 3) === 0; }
+
+  let spawnerBase = -1;
+  function findSpawner(h, f) {
+    const lim = h.length * 4;
+    for (let i = 30; i < h.length - 8; i++) {
+      if (f[i] !== 1 || f[i + 1] !== 8) continue;
+      if (Math.abs(f[i + 2] - 0.35) > 1e-4 || f[i + 3] !== 4) continue;
+      const base = i - 25;
+      if (base < 3) continue;
+      if (!isPtr(h[base], lim) || !isPtr(h[base + 14], lim)) continue;
+      const mp = h[base + 19];
+      if (!(mp >= 0 && mp < 1000)) continue;
+      const size = h[(h[base + 14] >> 2) + 3];
+      if (!(size >= 0 && size < 64)) continue;
+      return base;
+    }
+    return -1;
+  }
+
+  let staticBlk = -1;
+  function findStatic(h, u8) {
+    const lim = h.length * 4;
+    // registro typeDefinition de StaticUIDatabase dentro de la copia del metadata en memoria
+    let rec = -1;
+    for (let i = 0; i < h.length - 24; i++) {
+      if (h[i] === 13898 && h[i + 1] === 21219 && h[i + 8] === 3 && h[i + 9] === 34) { rec = i; break; }
+    }
+    if (rec < 0) return -1;
+    const tdef = (rec - 8) * 4;                 // el registro arranca 32 bytes antes de fieldStart
+    for (let R = 0; R < h.length; R++) {
+      if (h[R] !== tdef) continue;
+      const C = R - 9;                          // Il2CppClass.type esta en +36 bytes
+      if (C < 0) continue;
+      for (let j = 0; j < 80; j++) {
+        const v = h[C + j];
+        if (!isPtr(v, lim)) continue;
+        const P = v >> 2;
+        if (h[P] !== 1 && h[P] !== 2) continue;  // intendedAmountOfPlayers
+        let ok = true;
+        for (let b = 12; b <= 22; b++) if (u8[v + b] > 1) { ok = false; break; }
+        if (!ok || u8[v + 23] !== 0) continue;
+        return v;
+      }
+    }
+    return -1;
+  }
+
+  let lastScan = 0;
+  function captureBoot(h) {
+    if (boot || spawnerBase < 0) return;
+    boot = { police: h[spawnerBase + 19], traffic: h[spawnerBase + 16] };
+  }
+  function ensure() {
+    const u = window.unityInstance;
+    if (!u || !u.Module || !u.Module.HEAP32) return null;
+    const M = u.Module, h = M.HEAP32, f = M.HEAPF32, u8 = M.HEAPU8;
+    if (spawnerBase >= 0 && staticBlk >= 0 && validSpawner(h, f) && validStatic(h, u8)) {
+      captureBoot(h);
+      return { h: h, f: f, u8: u8, k: spawnerBase, b: staticBlk };
+    }
+    // los escaneos son caros: no repetir hasta que el juego esté listo
+    const now = Date.now();
+    if (now - lastScan < 1500) return null;
+    lastScan = now;
+    if (spawnerBase < 0 || !validSpawner(h, f)) spawnerBase = findSpawner(h, f);
+    if (staticBlk < 0 || !validStatic(h, u8)) staticBlk = findStatic(h, u8);
+    if (spawnerBase < 0 || staticBlk < 0) return null;
+    captureBoot(h);
+    return { h: h, f: f, u8: u8, k: spawnerBase, b: staticBlk };
+  }
+  function validSpawner(h, f) {
+    const k = spawnerBase;
+    if (k < 3 || k + 33 >= h.length) return false;
+    return f[k + 25] === 1 && f[k + 26] === 8 &&
+           Math.abs(f[k + 27] - 0.35) < 1e-4 && f[k + 28] === 4;
+  }
+  function validStatic(h, u8) {
+    const b = staticBlk;
+    if (b <= 0 || b + 48 >= h.length * 4) return false;
+    const P = b >> 2;
+    if (h[P] !== 1 && h[P] !== 2) return false;
+    for (let i = 12; i <= 22; i++) if (u8[b + i] > 1) return false;
+    return u8[b + 23] === 0;
+  }
+
+  /* ---------------- variedad de coches de policia ----------------
+
+     El juego ya alterna entre los ~7 modelos de policia (36 variantes con sus
+     pinturas). Lo que no tiene son vehiculos lentos como el toro. Para eso se
+     reescriben las entradas Class_WeightedCarSetup de las PolicePalette:
+
+        entrada: [klass][0][0][27234136][0][peso][setup]   (7 words)
+
+     Se localizan las paletas por el spawner (campo +14) y se rotan los setups
+     entre los CarSetup que ya existen en memoria, incluido el del toro. */
+
+  function collectSetups(h, isPtr, k, lcd) {
+    const L = h[lcd - 1 + 2] >> 2, items = h[L + 2], cnt = h[L + 3];
+    if (!isPtr(items)) return [];
+    const A = items >> 2;
+    const out = [];
+    for (let i = 0; i < cnt; i++) {
+      const p = h[A + 4 + i];
+      if (!isPtr(p)) continue;
+      const s = h[(p >> 2) + 16];               // CarBrain.setup
+      if (isPtr(s)) out.push(s);
+    }
+    return out;
+  }
+
+  /* Rota los setups de las paletas para que salgan modelos variados.
+     Devuelve cuantas entradas cambio, o -1 si no encontro paletas. */
+  function applyVariety(m, setups) {
+    const { h } = m;
+    const isPtr = (v) => isPtr(v, h.length * 4);
+    const uniq = Array.from(new Set(setups)).filter((v) => isPtr(v));
+    if (uniq.length < 2) return -1;
+    const lp = h[m.k + 14];
+    if (!isPtr(lp)) return -1;
+    const L2 = lp >> 2, it2 = h[L2 + 2], c2 = h[L2 + 3];
+    if (!isPtr(it2)) return -1;
+    const A2 = it2 >> 2;
+    let mod = 0;
+    for (let i = 0; i < c2; i++) {
+      const pal = h[A2 + 4 + i];
+      if (!isPtr(pal)) continue;
+      const lp2 = h[(pal >> 2) + 4];
+      if (!isPtr(lp2)) continue;
+      const L3 = lp2 >> 2;
+      const it = h[L3 + 2], c = h[L3 + 3];
+      if (!isPtr(it)) continue;
+      const IA = it >> 2;
+      for (let j = 0; j < c; j++) {
+        const e = h[IA + 4 + j];
+        if (!isPtr(e)) continue;
+        h[(e >> 2) + 2] = uniq[(i * 3 + j) % uniq.length];
+        mod++;
+      }
+    }
+    return mod;
+  }
+
+  function varietyTick(m) {
+    if (varietyMode === "off") return;           // dejar solo los modelos del juego
+    const now = Date.now();
+    if (now - lastVariety < 3000) return;        // no reescribir cada frame
+    lastVariety = now;
+    const objStart = (m.k - 4) * 4, listOfCars = m.h[m.k + 11];
+    const N = m.h.length;
+    let lcd = -1;
+    for (let i = 0; i < N; i++) {
+      if (m.h[i] === objStart && m.h[i - 1] === listOfCars) { lcd = i; break; }
+    }
+    if (lcd < 0) return;
+    const setups = collectSetups(m.h, isPtr, m.k, lcd);
+    if (!setups.length) return;
+    applyVariety(m, setups);
+  }
+
+  /* ---------------- aplicación ---------------- */
+
+  function write(m, level, traffic) {
+    const { h, f, u8, k, b } = m;
+    f[(b >> 2) + 2] = level.heat;               // sharedFelony: sin calor no hay persecucion
+    u8[b + 21] = 0;                             // SESSIONSETTING_DisablePolice
+    if (level.heat > 0) u8[b + 22] = 1;         // ONETIME_skipAd
+
+    /* Con 2 jugadores el juego reparte el pool entre ambos: maxPoliceSplitscreen
+       es el total compartido, no el de cada uno. Si no se duplica, cada jugador
+       recibe la mitad (elegís 48 y salen 3-5). Por eso, con players == 2, se
+       multiplica por 2 para que cada uno tenga la cantidad pedida. */
+    const players = h[b >> 2];                  // intendedAmountOfPlayers (1 | 2)
+    const mult = players === 2 ? 2 : 1;
+
+    h[k + 19] = level.cops;                     // maxPolice = total de cops
+    h[k + 18] = level.cops * mult;              // maxPoliceSplitscreen (x2 en 2P)
+    h[k + 16] = traffic;                        // maxTraffic
+    h[k + 15] = traffic * mult;                 // maxTrafficSplitscreen (x2 en 2P)
+    h[k + 17] = traffic;                        // maxTraffic_mobile
+  }
+
+  function tick() {
+    const m = ensure();
+    if (!m) return;
+    const t = target();
+    if (!t) return;                    // modo auto: aún sin leer el valor del archivo
+    write(m, t.level, t.traffic);
+    varietyTick(m);
+  }
+
+  let bootRendered = false;
+  function status() {
+    const m = ensure();
+    if (!m) { statusEl.textContent = "Buscando el juego…"; return; }
+    const t = target();
+    if (!t) { statusEl.textContent = "Leyendo el valor del archivo…"; return; }
+    if (boot && !bootRendered) { bootRendered = true; render(); }
+    const level = t.level;
+    const alive = m.h[m.k + 30];
+    const heat = m.f[(m.b >> 2) + 2].toFixed(2);
+    const pool = POOL ? POOL.pool : null;
+    const over = pool != null && level.cops + (t.traffic || 0) + 1 > pool;
+    let txt;
+    if (level.cops === 0) {
+      txt = "Sin policía · tráfico " + t.traffic;
+    } else {
+      txt = level.name + " · " + level.cops + " cops (vivos " + alive + " · calor " + heat +
+            ") · tráfico " + t.traffic;
+    }
+    if (over) {
+      txt += " · tope real " + Math.max(0, pool - (t.traffic || 0) - 1) +
+             " cops (pool " + pool + ": reiniciá con el launcher para agrandarlo)";
+    }
+    statusEl.textContent = txt;
+  }
+
+  /* ---------------- UI ---------------- */
+
+  function render() {
+    lvlRow.innerHTML = "";
+    const mk = (label, active, onclick) => {
+      const b = document.createElement("button");
+      b.className = "opt" + (active ? " sel" : "");
+      b.textContent = label;
+      b.onclick = onclick;
+      lvlRow.appendChild(b);
+    };
+    mk("Del archivo" + (boot ? " · " + boot.police : ""), cfg.mode === "auto",
+       () => { cfg.mode = "auto"; save(); render(); });
+    mk("Sin policía", cfg.mode === -1, () => { cfg.mode = -1; save(); render(); });
+    LEVELS.forEach((L, i) => {
+      mk(L.name + " · " + L.cops, cfg.mode === i, () => {
+        cfg.mode = i; save(); render();
+      });
+    });
+    mk("Personalizado · " + clampCops(cfg.custom), cfg.mode === "custom", () => {
+      cfg.mode = "custom"; save(); render();
+    });
+
+    if (document.activeElement !== custInput) custInput.value = clampCops(cfg.custom);
+    custInput.max = String(MAX_COPS);
+    custBtn.className = "opt" + (cfg.mode === "custom" ? " sel" : "");
+    custBtn.onclick = () => {
+      cfg.custom = clampCops(custInput.value);
+      cfg.mode = "custom";
+      save(); render();
+    };
+    custInput.onchange = () => {
+      cfg.custom = clampCops(custInput.value);
+      if (cfg.mode === "custom") { save(); render(); }
+    };
+
+    trafRow.innerHTML = "";
+    const mkTraf = (label, active, onclick) => {
+      const b = document.createElement("button");
+      b.className = "opt" + (active ? " sel" : "");
+      b.textContent = label;
+      b.onclick = onclick;
+      trafRow.appendChild(b);
+    };
+    mkTraf("del archivo", cfg.traffic == null, () => { cfg.traffic = null; save(); render(); });
+    TRAFFIC_OPTS.forEach(v => {
+      mkTraf(v === 0 ? "sin tráfico" : String(v), cfg.traffic === v,
+             () => { cfg.traffic = v; save(); render(); });
+    });
+
+    const varRow = document.getElementById("varRow");
+    varRow.innerHTML = "";
+    const mkVar = (label, active, onclick) => {
+      const b = document.createElement("button");
+      b.className = "opt" + (active ? " sel" : "");
+      b.textContent = label;
+      b.onclick = onclick;
+      varRow.appendChild(b);
+    };
+    mkVar("Mixta (todos)", varietyMode === "mixed",
+          () => { varietyMode = "mixed"; lastVariety = 0; save(); render(); });
+    mkVar("Solo policía", varietyMode === "off",
+          () => { varietyMode = "off"; save(); render(); });
+  }
+
+  btn.onclick = () => {
+    const open = panel.style.display === "block";
+    panel.style.display = open ? "none" : "block";
+    if (!open) { tick(); status(); }
+  };
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "m" || e.key === "M") {
+      if (document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+      btn.click();
+    }
+  });
+
+  render();
+  setInterval(tick, 16);
+  setInterval(status, 500);
+})();
+</script>
+</body>
+</html>
