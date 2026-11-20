@@ -6,6 +6,16 @@ Recreación completa y **original** del juego de Poki *Blacktop: Police Chase* (
 
 ---
 
+## ⚡ Instalación en 1 comando
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/gaboexperimetos-ui/blak--top-police-chase-/main/install.sh | bash
+```
+
+Descarga el juego en `~/BlacktopPoliceChase`, lo actualiza si ya existe y abre `http://localhost:3000`. Solo requiere Node.js: sin `npm install`, sin dependencias y sin conexión una vez descargado.
+
+---
+
 ## ▶️ Cómo jugar (sin internet)
 
 **Opción A — la más simple:** abre `index.html` con doble clic en Chrome, Edge, Firefox o Safari. Funciona directamente desde `file://`.
