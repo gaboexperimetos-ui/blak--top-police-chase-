@@ -1,12 +1,13 @@
 /* Service Worker: cachea TODOS los archivos para jugar sin conexión tras la primera carga. */
 'use strict';
-const CACHE = 'btp-offline-v2';
+const CACHE = 'btp-offline-v3';
 const ASSETS = [
-  './', './index.html', './styles.css', './sw.js',
+  './', './index.html', './styles.css', './sw.js', './pool.json',
   './vendor/three.min.js', './vendor/THREE-LICENSE.txt',
   './src/core.js', './src/audio.js', './src/models.js', './src/city.js',
   './src/physics.js', './src/ai.js', './src/garage.js', './src/missions.js',
-  './src/ui.js', './src/game.js'
+  './src/ui.js', './src/game.js',
+  './Build/Build.loader.js', './Build/Build.framework.js', './Build/Build.wasm', './Build/Build.data'
 ];
 
 self.addEventListener('install', (event) => {
